@@ -4,7 +4,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '1',
     type: 'trigger',
-    position: { x: 250, y: 50 },
+    position: { x: 50, y: 250 },
     data: {
       label: 'Collection created',
       type: 'trigger',
@@ -19,7 +19,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '2',
     type: 'condition',
-    position: { x: 250, y: 200 },
+    position: { x: 400, y: 200 },
     data: {
       label: 'Check collection status',
       type: 'condition',
@@ -54,7 +54,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '3',
     type: 'action',
-    position: { x: 100, y: 400 },
+    position: { x: 800, y: 100 },
     data: {
       label: 'Add collection tags',
       type: 'action',
@@ -67,7 +67,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '4',
     type: 'action',
-    position: { x: 400, y: 400 },
+    position: { x: 800, y: 300 },
     data: {
       label: 'Send HTTP request',
       type: 'action',
@@ -85,7 +85,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '5',
     type: 'step',
-    position: { x: 100, y: 550 },
+    position: { x: 1150, y: 100 },
     data: {
       label: 'Log activity',
       type: 'step',
@@ -99,7 +99,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '6',
     type: 'action',
-    position: { x: 400, y: 550 },
+    position: { x: 1150, y: 300 },
     data: {
       label: 'Send email notification',
       type: 'action',
@@ -115,7 +115,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '7',
     type: 'condition',
-    position: { x: 400, y: 700 },
+    position: { x: 1500, y: 250 },
     data: {
       label: 'Check email response',
       type: 'condition',
@@ -133,7 +133,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '8',
     type: 'action',
-    position: { x: 300, y: 850 },
+    position: { x: 1850, y: 200 },
     data: {
       label: 'Update collection metadata',
       type: 'action',
@@ -148,7 +148,7 @@ export const sampleNodes: WorkflowNode[] = [
   {
     id: '9',
     type: 'action',
-    position: { x: 500, y: 850 },
+    position: { x: 1850, y: 350 },
     data: {
       label: 'Retry email',
       type: 'action',

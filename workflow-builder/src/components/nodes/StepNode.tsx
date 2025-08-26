@@ -10,13 +10,13 @@ const StepNode = memo(({ data }: NodeProps) => {
     <div style={{ minWidth: '200px' }}>
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Left}
         style={{
           background: '#6C71C5',
           width: 10,
           height: 10,
           border: '2px solid #fff',
-          top: -5
+          left: -5
         }}
       />
       
@@ -52,13 +52,13 @@ const StepNode = memo(({ data }: NodeProps) => {
       
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         style={{
           background: '#6C71C5',
           width: 10,
           height: 10,
           border: '2px solid #fff',
-          bottom: -5
+          right: -5
         }}
       />
     </div>

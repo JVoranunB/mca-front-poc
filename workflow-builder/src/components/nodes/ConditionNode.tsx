@@ -10,13 +10,13 @@ const ConditionNode = memo(({ data }: NodeProps) => {
     <div style={{ minWidth: '320px' }}>
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Left}
         style={{
           background: '#95A99C',
           width: 10,
           height: 10,
           border: '2px solid #fff',
-          top: -5
+          left: -5
         }}
       />
       
@@ -78,21 +78,21 @@ const ConditionNode = memo(({ data }: NodeProps) => {
       <Handle
         id="then"
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         style={{
           background: '#50B83C',
           width: 10,
           height: 10,
           border: '2px solid #fff',
-          bottom: -5,
-          left: '30%'
+          right: -5,
+          top: '30%'
         }}
       />
       <div style={{
         position: 'absolute',
-        bottom: -20,
-        left: '30%',
-        transform: 'translateX(-50%)',
+        right: -35,
+        top: '30%',
+        transform: 'translateY(-50%)',
         fontSize: '11px',
         color: '#50B83C',
         fontWeight: 500
@@ -103,21 +103,21 @@ const ConditionNode = memo(({ data }: NodeProps) => {
       <Handle
         id="otherwise"
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         style={{
           background: '#F49342',
           width: 10,
           height: 10,
           border: '2px solid #fff',
-          bottom: -5,
-          left: '70%'
+          right: -5,
+          top: '70%'
         }}
       />
       <div style={{
         position: 'absolute',
-        bottom: -20,
-        left: '70%',
-        transform: 'translateX(-50%)',
+        right: -55,
+        top: '70%',
+        transform: 'translateY(-50%)',
         fontSize: '11px',
         color: '#F49342',
         fontWeight: 500

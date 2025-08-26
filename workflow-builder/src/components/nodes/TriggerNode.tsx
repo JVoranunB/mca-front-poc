@@ -60,13 +60,13 @@ const TriggerNode = memo(({ data }: NodeProps) => {
       
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         style={{
           background: '#5C6AC4',
           width: 10,
           height: 10,
           border: '2px solid #fff',
-          bottom: -5
+          right: -5
         }}
       />
     </div>
