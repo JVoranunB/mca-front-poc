@@ -1,0 +1,271 @@
+import React, { useState } from 'react';
+import {
+  Text,
+  Button,
+  Modal,
+  TextField,
+  Select,
+  FormLayout,
+  Toast,
+  Frame,
+  Badge,
+  InlineStack
+} from '@shopify/polaris';
+import {
+  SaveIcon,
+  FolderIcon,
+  CheckCircleIcon,
+  DeleteIcon
+} from '@shopify/polaris-icons';
+import useWorkflowStore from '../store/workflowStore';
+
+const TopBar: React.FC = () => {
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
+  const [workflowName, setWorkflowName] = useState('');
+  const [workflowDescription, setWorkflowDescription] = useState('');
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastError, setToastError] = useState(false);
+  
+  const {
+    saveWorkflow,
+    loadWorkflow,
+    clearWorkflow,
+    deleteWorkflow,
+    workflows,
+    currentWorkflow,
+    validateWorkflow,
+    isDirty,
+    nodes
+  } = useWorkflowStore();
+  
+  const handleSave = () => {
+    if (!workflowName.trim()) {
+      setToastMessage('Please enter a workflow name');
+      setToastError(true);
+      setShowToast(true);
+      return;
+    }
+    
+    const isValid = validateWorkflow();
+    if (!isValid) {
+      setToastMessage('Workflow has validation errors. Please fix them before saving.');
+      setToastError(true);
+      setShowToast(true);
+      return;
+    }
+    
+    saveWorkflow(workflowName, workflowDescription);
+    setIsSaveModalOpen(false);
+    setWorkflowName('');
+    setWorkflowDescription('');
+    setToastMessage('Workflow saved successfully');
+    setToastError(false);
+    setShowToast(true);
+  };
+  
+  const handleLoad = () => {
+    if (!selectedWorkflowId) {
+      setToastMessage('Please select a workflow to load');
+      setToastError(true);
+      setShowToast(true);
+      return;
+    }
+    
+    loadWorkflow(selectedWorkflowId);
+    setIsLoadModalOpen(false);
+    setSelectedWorkflowId('');
+    setToastMessage('Workflow loaded successfully');
+    setToastError(false);
+    setShowToast(true);
+  };
+  
+  const handleClear = () => {
+    clearWorkflow();
+    setToastMessage('Workflow cleared');
+    setToastError(false);
+    setShowToast(true);
+  };
+  
+  const handleValidate = () => {
+    const isValid = validateWorkflow();
+    setToastMessage(isValid ? 'Workflow is valid!' : 'Workflow has validation errors');
+    setToastError(!isValid);
+    setShowToast(true);
+  };
+  
+  const workflowOptions = workflows.map(w => ({
+    label: `${w.name} (${new Date(w.createdAt).toLocaleDateString()})`,
+    value: w.id
+  }));
+  
+  return (
+    <>
+      <div style={{ 
+        borderBottom: '1px solid #e1e3e5', 
+        padding: '12px 16px',
+        background: '#fff'
+      }}>
+        <InlineStack align="space-between" blockAlign="center">
+          <InlineStack gap="400" blockAlign="center">
+            <Text as="h1" variant="headingXl">
+              Workflow Builder
+            </Text>
+            {currentWorkflow && (
+              <Badge tone="info">
+                {currentWorkflow.name}
+              </Badge>
+            )}
+            {isDirty && (
+              <Badge tone="attention">
+                Unsaved changes
+              </Badge>
+            )}
+            {nodes.length > 0 && (
+              <Badge>
+                {`${nodes.length} nodes`}
+              </Badge>
+            )}
+          </InlineStack>
+          
+          <InlineStack gap="200">
+            <Button
+              icon={SaveIcon}
+              onClick={() => setIsSaveModalOpen(true)}
+              variant="primary"
+            >
+              Save
+            </Button>
+            <Button
+              icon={FolderIcon}
+              onClick={() => setIsLoadModalOpen(true)}
+            >
+              Load
+            </Button>
+            <Button
+              icon={CheckCircleIcon}
+              onClick={handleValidate}
+            >
+              Validate
+            </Button>
+            <Button
+              icon={DeleteIcon}
+              onClick={handleClear}
+              tone="critical"
+            >
+              Clear
+            </Button>
+          </InlineStack>
+        </InlineStack>
+      </div>
+      
+      <Modal
+        open={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        title="Save Workflow"
+        primaryAction={{
+          content: 'Save',
+          onAction: handleSave
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setIsSaveModalOpen(false)
+          }
+        ]}
+      >
+        <Modal.Section>
+          <FormLayout>
+            <TextField
+              label="Workflow Name"
+              value={workflowName}
+              onChange={setWorkflowName}
+              autoComplete="off"
+              placeholder="Enter workflow name"
+            />
+            <TextField
+              label="Description (Optional)"
+              value={workflowDescription}
+              onChange={setWorkflowDescription}
+              multiline={3}
+              autoComplete="off"
+              placeholder="Describe what this workflow does"
+            />
+          </FormLayout>
+        </Modal.Section>
+      </Modal>
+      
+      <Modal
+        open={isLoadModalOpen}
+        onClose={() => setIsLoadModalOpen(false)}
+        title="Load Workflow"
+        primaryAction={{
+          content: 'Load',
+          onAction: handleLoad,
+          disabled: !selectedWorkflowId
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setIsLoadModalOpen(false)
+          }
+        ]}
+      >
+        <Modal.Section>
+          <FormLayout>
+            <Select
+              label="Select Workflow"
+              options={[
+                { label: 'Choose a workflow...', value: '' },
+                ...workflowOptions
+              ]}
+              value={selectedWorkflowId}
+              onChange={setSelectedWorkflowId}
+            />
+            {selectedWorkflowId && workflows.find(w => w.id === selectedWorkflowId) && (
+              <div style={{ marginTop: '16px' }}>
+                <Text as="p" variant="bodyMd">
+                  <strong>Description:</strong>{' '}
+                  {workflows.find(w => w.id === selectedWorkflowId)?.description || 'No description'}
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  <strong>Nodes:</strong>{' '}
+                  {workflows.find(w => w.id === selectedWorkflowId)?.nodes.length || 0}
+                </Text>
+                <Button
+                  icon={DeleteIcon}
+                  onClick={() => {
+                    deleteWorkflow(selectedWorkflowId);
+                    setSelectedWorkflowId('');
+                    setToastMessage('Workflow deleted');
+                    setToastError(false);
+                    setShowToast(true);
+                  }}
+                  tone="critical"
+                  fullWidth
+                  variant="plain"
+                >
+                  Delete this workflow
+                </Button>
+              </div>
+            )}
+          </FormLayout>
+        </Modal.Section>
+      </Modal>
+      
+      {showToast && (
+        <Frame>
+          <Toast
+            content={toastMessage}
+            onDismiss={() => setShowToast(false)}
+            error={toastError}
+          />
+        </Frame>
+      )}
+    </>
+  );
+};
+
+export default TopBar;
