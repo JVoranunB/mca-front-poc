@@ -17,18 +17,19 @@ import { sampleNodes, sampleEdges } from './data/sampleWorkflows';
 function App() {
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { addNode, nodes, edges } = useWorkflowStore();
+  const { addNode } = useWorkflowStore();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     // Load sample workflow on initial load if no nodes exist
-    if (nodes.length === 0 && edges.length === 0) {
-      const store = useWorkflowStore.getState();
+    // Only run once on mount to prevent duplicate loading
+    const store = useWorkflowStore.getState();
+    if (store.nodes.length === 0 && store.edges.length === 0) {
       sampleNodes.forEach(node => store.addNode(node));
       sampleEdges.forEach(edge => store.addEdge(edge));
     }
     setIsLoading(false);
-  }, [nodes.length, edges.length]);
+  }, []); // Empty dependency array to run only once
   
   const onDragStart = (event: React.DragEvent, nodeTemplate: NodeTemplate) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify(nodeTemplate));

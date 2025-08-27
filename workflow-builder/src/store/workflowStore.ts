@@ -64,8 +64,21 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
   
   onConnect: (params) => {
+    // Create unique edge ID that includes source handle to prevent duplicates
+    const handleSuffix = params.sourceHandle ? `-${params.sourceHandle}` : '';
+    const baseId = `e${params.source}-${params.target}${handleSuffix}`;
+    
+    // Ensure uniqueness by checking existing edges and adding a counter if needed
+    const existingEdges = get().edges;
+    let uniqueId = baseId;
+    let counter = 1;
+    while (existingEdges.some(edge => edge.id === uniqueId)) {
+      uniqueId = `${baseId}-${counter}`;
+      counter++;
+    }
+    
     const newEdge: WorkflowEdge = {
-      id: `e${params.source}-${params.target}`,
+      id: uniqueId,
       source: params.source!,
       target: params.target!,
       sourceHandle: params.sourceHandle || undefined,
@@ -106,10 +119,18 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
   
   addEdge: (edge) => {
-    set((state) => ({
-      edges: [...state.edges, edge],
-      isDirty: true
-    }));
+    set((state) => {
+      // Check if edge with same ID already exists
+      const existingEdge = state.edges.find(e => e.id === edge.id);
+      if (existingEdge) {
+        console.warn(`Edge with ID '${edge.id}' already exists. Skipping duplicate.`);
+        return state;
+      }
+      return {
+        edges: [...state.edges, edge],
+        isDirty: true
+      };
+    });
   },
   
   updateEdge: (edgeId, data) => {

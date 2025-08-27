@@ -90,7 +90,7 @@ const PropertiesSidebar: React.FC = () => {
         <Card>
           <EmptyState
             heading="No node selected"
-            image=""
+            image="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23DDD' d='M30 58C45.464 58 58 45.464 58 30S45.464 2 30 2 2 14.536 2 30s12.536 28 28 28z'/%3E%3Cpath fill='%23FFF' d='M30 54C43.255 54 54 43.255 54 30S43.255 6 30 6 6 16.745 6 30s10.745 24 24 24z'/%3E%3Cpath fill='%23DDD' d='M30 50C41.046 50 50 41.046 50 30S41.046 10 30 10 10 18.954 10 30s8.954 20 20 20z'/%3E%3Cpath fill='%23FFF' d='M24 26h12v8H24z'/%3E%3C/g%3E%3C/svg%3E"
           >
             <p>Select a node to view and edit its properties</p>
           </EmptyState>
