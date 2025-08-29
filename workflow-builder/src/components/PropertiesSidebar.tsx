@@ -14,9 +14,7 @@ import {
 } from '@shopify/polaris';
 import { Icons } from '../utils/icons';
 import useWorkflowStore from '../store/workflowStore';
-import type { WorkflowCondition, TriggerConfig } from '../types/workflow.types';
-import EventBasedConfig from './triggers/EventBasedConfig';
-import ScheduledConfig from './triggers/ScheduledConfig';
+import type { WorkflowCondition, StartConfig } from '../types/workflow.types';
 import { getDataSourcesForConditions, getCollectionsForDataSource, getFieldsForCollection, type DataSourceField } from '../utils/dataSourceFields';
 
 const PropertiesSidebar: React.FC = () => {
@@ -56,7 +54,7 @@ const PropertiesSidebar: React.FC = () => {
   const addCondition = () => {
     const newCondition: WorkflowCondition = {
       id: Date.now().toString(),
-      dataSource: 'mongodb',
+      dataSource: 'CRM',
       field: '',
       fieldType: 'text',
       operator: 'equals',
@@ -104,40 +102,35 @@ const PropertiesSidebar: React.FC = () => {
   }
   
   const renderConfigFields = () => {
+    if (selectedNode.data.type === 'start') {
+      const config = localConfig as StartConfig;
+      return (
+        <>
+          <TextField
+            label="Merchant ID"
+            value={String(config.merchantId || '')}
+            onChange={(value) => handleConfigChange('merchantId', value)}
+            autoComplete="off"
+            helpText="Unique identifier for the merchant account"
+          />
+          <Select
+            label="Data Source"
+            options={[
+              { label: 'CRM System', value: 'CRM' }
+            ]}
+            value={config.dataSource || 'CRM'}
+            onChange={(value) => handleConfigChange('dataSource', value)}
+            disabled
+            helpText="Primary data source for workflow execution"
+          />
+        </>
+      );
+    }
+    
     if (selectedNode.data.type === 'trigger') {
-      const config = localConfig as TriggerConfig;
-      
-      if (config.triggerCategory === 'event-based') {
-        return (
-          <EventBasedConfig
-            config={config}
-            onChange={(newConfig) => {
-              setLocalConfig(newConfig);
-              if (selectedNode) {
-                updateNode(selectedNode.id, { config: newConfig });
-              }
-            }}
-          />
-        );
-      }
-      
-      if (config.triggerCategory === 'scheduled') {
-        return (
-          <ScheduledConfig
-            config={config}
-            onChange={(newConfig) => {
-              setLocalConfig(newConfig);
-              if (selectedNode) {
-                updateNode(selectedNode.id, { config: newConfig });
-              }
-            }}
-          />
-        );
-      }
-      
       return (
         <Text as="p" variant="bodySm" tone="subdued">
-          Select a trigger category to configure options
+          Trigger configuration (legacy support)
         </Text>
       );
     }
@@ -326,7 +319,7 @@ const PropertiesSidebar: React.FC = () => {
                                 options={getDataSourcesForConditions()}
                                 value={condition.dataSource}
                                 onChange={(value) => updateCondition(condition.id, { 
-                                  dataSource: value as 'mongodb' | 'crm',
+                                  dataSource: value as 'CRM',
                                   collection: undefined,
                                   field: '',
                                   value: ''
@@ -436,14 +429,16 @@ const PropertiesSidebar: React.FC = () => {
               
               <Divider />
               
-              <Button
-                tone="critical"
-                icon={Icons.Delete}
-                onClick={() => deleteNode(selectedNode.id)}
-                fullWidth
-              >
-                Delete Node
-              </Button>
+              {selectedNode.data.type !== 'start' && (
+                <Button
+                  tone="critical"
+                  icon={Icons.Delete}
+                  onClick={() => deleteNode(selectedNode.id)}
+                  fullWidth
+                >
+                  Delete Node
+                </Button>
+              )}
             </BlockStack>
           </Card>
         </BlockStack>

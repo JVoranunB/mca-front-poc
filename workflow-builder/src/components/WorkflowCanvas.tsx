@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -10,7 +10,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { nodeTypes } from './nodes';
 import useWorkflowStore from '../store/workflowStore';
-import type { WorkflowNode } from '../types/workflow.types';
+import type { WorkflowNode, NodeData, StartConfig } from '../types/workflow.types';
 
 interface WorkflowCanvasProps {
   onDrop: (event: React.DragEvent) => void;
@@ -29,8 +29,37 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     onEdgesChange,
     onConnect,
     selectNode,
-    selectEdge
+    selectEdge,
+    addNode
   } = useWorkflowStore();
+  
+  // Auto-create start node when canvas is empty
+  useEffect(() => {
+    const hasStartNode = nodes.some(node => node.type === 'start');
+    if (nodes.length === 0 || !hasStartNode) {
+      const startNode: WorkflowNode = {
+        id: 'start-node',
+        type: 'start',
+        position: { x: 250, y: 200 },
+        data: {
+          label: 'Start',
+          type: 'start',
+          description: 'Workflow starting point',
+          config: {
+            label: 'Workflow Start',
+            description: 'Beginning of workflow execution',
+            merchantId: '',
+            dataSource: 'CRM'
+          } as StartConfig
+        } as NodeData
+      };
+      
+      // Only add if no start node exists
+      if (!hasStartNode) {
+        addNode(startNode);
+      }
+    }
+  }, [nodes, addNode]);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onInit = (instance: any) => {
@@ -89,6 +118,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
           zoomable 
           nodeColor={(node) => {
             const colors: Record<string, string> = {
+              start: '#8B5A99',
               trigger: '#5C6AC4',
               condition: '#95A99C',
               action: '#00848E',

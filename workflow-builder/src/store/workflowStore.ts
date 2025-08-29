@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { Connection, NodeChange, EdgeChange } from '@xyflow/react';
-import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, TriggerConfig, WorkflowSummary, TriggerType } from '../types/workflow.types';
+import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, WorkflowSummary, TriggerType } from '../types/workflow.types';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -116,12 +116,22 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
   
   deleteNode: (nodeId) => {
-    set((state) => ({
-      nodes: state.nodes.filter((node) => node.id !== nodeId),
-      edges: state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
-      selectedNode: state.selectedNode?.id === nodeId ? null : state.selectedNode,
-      isDirty: true
-    }));
+    set((state) => {
+      const nodeToDelete = state.nodes.find(node => node.id === nodeId);
+      
+      // Prevent deletion of start nodes
+      if (nodeToDelete?.type === 'start') {
+        console.warn('Cannot delete start node');
+        return state;
+      }
+      
+      return {
+        nodes: state.nodes.filter((node) => node.id !== nodeId),
+        edges: state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
+        selectedNode: state.selectedNode?.id === nodeId ? null : state.selectedNode,
+        isDirty: true
+      };
+    });
   },
   
   addEdge: (edge) => {
@@ -167,13 +177,8 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   saveWorkflow: (name, description) => {
     const currentState = get();
     
-    // Determine trigger type from nodes if not already set
+    // For start node workflows, default to event-based
     let triggerType: TriggerType = 'event-based';
-    const triggerNode = currentState.nodes.find(n => n.data.type === 'trigger');
-    if (triggerNode?.data.config) {
-      const config = triggerNode.data.config as TriggerConfig;
-      triggerType = config.triggerCategory === 'scheduled' ? 'schedule-based' : 'event-based';
-    }
     
     const workflow: Workflow = {
       id: currentState.currentWorkflow?.id || Date.now().toString(),
@@ -244,107 +249,45 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const errors: ValidationError[] = [];
     const { nodes, edges } = get();
     
-    const triggerNodes = nodes.filter((n) => n.data.type === 'trigger');
-    if (triggerNodes.length === 0) {
+    const startNodes = nodes.filter((n) => n.data.type === 'start');
+    if (startNodes.length === 0) {
       errors.push({
-        message: 'Workflow must have at least one trigger node',
+        message: 'Workflow must have a start node',
         severity: 'error'
       });
-    } else if (triggerNodes.length > 1) {
+    } else if (startNodes.length > 1) {
       errors.push({
-        message: 'Workflow should have only one trigger node',
+        message: 'Workflow should have only one start node',
         severity: 'warning'
       });
     }
     
-    // Validate trigger configurations
-    triggerNodes.forEach((node) => {
-      const config = node.data.config as TriggerConfig;
+    // Validate start node configurations
+    startNodes.forEach((node) => {
+      const config = node.data.config as any;
       
       if (!config) {
         errors.push({
           nodeId: node.id,
-          message: `Trigger node "${node.data.label}" is missing configuration`,
+          message: `Start node "${node.data.label}" is missing configuration`,
           severity: 'error'
         });
         return;
       }
       
-      if (!config.triggerCategory) {
-        errors.push({
-          nodeId: node.id,
-          message: `Trigger node "${node.data.label}" must specify a trigger category`,
-          severity: 'error'
-        });
-      }
-      
       if (!config.dataSource) {
         errors.push({
           nodeId: node.id,
-          message: `Trigger node "${node.data.label}" must specify a data source`,
+          message: `Start node "${node.data.label}" must specify a data source`,
           severity: 'error'
         });
-      }
-      
-      // Event-based trigger validation
-      if (config.triggerCategory === 'event-based') {
-        if (config.dataSource === 'mongodb' && (!config.collections || config.collections.length === 0)) {
-          errors.push({
-            nodeId: node.id,
-            message: `Event-based trigger "${node.data.label}" must specify collections to monitor`,
-            severity: 'error'
-          });
-        }
-      }
-      
-      // Scheduled trigger validation
-      if (config.triggerCategory === 'scheduled') {
-        if (!config.scheduleTime) {
-          errors.push({
-            nodeId: node.id,
-            message: `Scheduled trigger "${node.data.label}" must specify a schedule time`,
-            severity: 'error'
-          });
-        }
-        
-        if (config.scheduleType === 'one-time' && !config.scheduleDate) {
-          errors.push({
-            nodeId: node.id,
-            message: `One-time scheduled trigger "${node.data.label}" must specify a schedule date`,
-            severity: 'error'
-          });
-        }
-        
-        if (config.scheduleType === 'recurring' && !config.recurrencePattern) {
-          errors.push({
-            nodeId: node.id,
-            message: `Recurring scheduled trigger "${node.data.label}" must specify a recurrence pattern`,
-            severity: 'error'
-          });
-        }
-        
-        if (config.recurrencePattern === 'weekly' && config.dayOfWeek === undefined) {
-          errors.push({
-            nodeId: node.id,
-            message: `Weekly scheduled trigger "${node.data.label}" must specify day of week`,
-            severity: 'error'
-          });
-        }
-        
-        if (config.recurrencePattern === 'monthly' && !config.dayOfMonth) {
-          errors.push({
-            nodeId: node.id,
-            message: `Monthly scheduled trigger "${node.data.label}" must specify day of month`,
-            severity: 'error'
-          });
-        }
       }
     });
     
     nodes.forEach((node) => {
       const hasIncoming = edges.some((e) => e.target === node.id);
       
-      if (node.data.type !== 'trigger' && !hasIncoming) {
+      if (node.data.type !== 'start' && !hasIncoming) {
         errors.push({
           nodeId: node.id,
           message: `Node "${node.data.label}" has no incoming connections`,

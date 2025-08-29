@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, Text, BlockStack, InlineStack, Icon, Tabs } from '@shopify/polaris';
 import { Icons } from '../utils/icons';
-import { getTemplatesByTriggerType } from '../data/nodeTemplates';
-import useWorkflowStore from '../store/workflowStore';
+import { nodeTemplates } from '../data/nodeTemplates';
 import type { NodeTemplate } from '../types/workflow.types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,16 +50,14 @@ interface NodeSidebarProps {
 
 const NodeSidebar: React.FC<NodeSidebarProps> = ({ onDragStart }) => {
   const [selectedTab, setSelectedTab] = React.useState(0);
-  const { currentWorkflow } = useWorkflowStore();
   
-  // Get templates based on current workflow's trigger type
-  const availableTemplates = getTemplatesByTriggerType(currentWorkflow?.triggerType);
+  // Get templates (start node is auto-created, so no triggers in sidebar)
+  const availableTemplates = nodeTemplates;
   
   const categories = [
-    { id: 'triggers', label: 'Triggers', nodes: availableTemplates.filter(n => n.category === 'triggers') },
-    { id: 'conditions', label: 'Conditions', nodes: availableTemplates.filter(n => n.category === 'conditions') },
-    { id: 'actions', label: 'Actions', nodes: availableTemplates.filter(n => n.category === 'actions') },
-    { id: 'utilities', label: 'Utilities', nodes: availableTemplates.filter(n => n.category === 'utilities') }
+    { id: 'conditions', label: 'Conditions', nodes: availableTemplates.filter((n: NodeTemplate) => n.category === 'conditions') },
+    { id: 'actions', label: 'Actions', nodes: availableTemplates.filter((n: NodeTemplate) => n.category === 'actions') },
+    { id: 'utilities', label: 'Utilities', nodes: availableTemplates.filter((n: NodeTemplate) => n.category === 'utilities') }
   ];
   
   const tabs = categories.map((category) => ({
@@ -83,7 +80,7 @@ const NodeSidebar: React.FC<NodeSidebarProps> = ({ onDragStart }) => {
       <Tabs tabs={tabs} selected={selectedTab} onSelect={setSelectedTab}>
         <div style={{ height: 'calc(100vh - 200px)', overflowY: 'auto', padding: '16px' }}>
           <BlockStack gap="300">
-            {currentCategory.nodes.map((template) => (
+            {currentCategory.nodes.map((template: NodeTemplate) => (
               <div
                 key={`${template.type}-${template.label}`}
                 draggable

@@ -1,60 +1,88 @@
-// Map data sources to available fields based on the PostgreSQL schema
+// CRM data source fields based on PostgreSQL schema
 export const DATA_SOURCE_FIELDS = {
-  mongodb: {
-    orders: [
-      { key: 'total_amount', label: 'Order Value', type: 'number' as const },
-      { key: 'status', label: 'Order Status', type: 'select' as const, options: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] },
-      { key: 'created_date', label: 'Order Date', type: 'date' as const },
-      { key: 'item_count', label: 'Number of Items', type: 'number' as const },
-      { key: 'customer_id', label: 'Customer ID', type: 'text' as const },
-      { key: 'payment_method', label: 'Payment Method', type: 'select' as const, options: ['credit_card', 'paypal', 'stripe', 'cash'] },
-      { key: 'shipping_country', label: 'Shipping Country', type: 'text' as const },
-      { key: 'discount_amount', label: 'Discount Amount', type: 'number' as const }
+  CRM: {
+    merchants: [
+      { key: 'code', label: 'Merchant Code', type: 'text' as const },
+      { key: 'name', label: 'Merchant Name', type: 'text' as const },
+      { key: 'created_date', label: 'Registration Date', type: 'date' as const },
+      { key: 'updated_date', label: 'Last Updated', type: 'date' as const }
     ],
-    customers: [
-      { key: 'registration_date', label: 'Registration Date', type: 'date' as const },
-      { key: 'total_orders', label: 'Total Orders', type: 'number' as const },
-      { key: 'customer_tier', label: 'Customer Tier', type: 'select' as const, options: ['bronze', 'silver', 'gold', 'platinum'] },
-      { key: 'last_login_date', label: 'Last Login', type: 'date' as const },
-      { key: 'email_verified', label: 'Email Verified', type: 'select' as const, options: ['true', 'false'] },
-      { key: 'lifetime_value', label: 'Lifetime Value', type: 'number' as const },
-      { key: 'preferred_language', label: 'Preferred Language', type: 'select' as const, options: ['en', 'es', 'fr', 'de', 'zh'] }
+    stores: [
+      { key: 'code', label: 'Store Code', type: 'text' as const },
+      { key: 'name', label: 'Store Name', type: 'text' as const },
+      { key: 'merchant_id', label: 'Merchant ID', type: 'text' as const },
+      { key: 'created_date', label: 'Store Created Date', type: 'date' as const }
     ],
     products: [
-      { key: 'stock_quantity', label: 'Stock Level', type: 'number' as const },
-      { key: 'category_id', label: 'Product Category', type: 'text' as const },
-      { key: 'price', label: 'Product Price', type: 'number' as const },
-      { key: 'last_updated', label: 'Last Updated', type: 'date' as const },
-      { key: 'is_featured', label: 'Featured Product', type: 'select' as const, options: ['true', 'false'] },
-      { key: 'vendor_id', label: 'Vendor ID', type: 'text' as const },
-      { key: 'weight', label: 'Product Weight', type: 'number' as const }
+      { key: 'code', label: 'Product Code', type: 'text' as const },
+      { key: 'name', label: 'Product Name', type: 'text' as const },
+      { key: 'product_category_id', label: 'Category ID', type: 'text' as const },
+      { key: 'description', label: 'Product Description', type: 'text' as const },
+      { key: 'merchant_id', label: 'Merchant ID', type: 'text' as const },
+      { key: 'created_date', label: 'Product Created Date', type: 'date' as const },
+      { key: 'updated_date', label: 'Last Updated', type: 'date' as const }
     ],
-    inventory: [
-      { key: 'available_quantity', label: 'Available Quantity', type: 'number' as const },
-      { key: 'reorder_threshold', label: 'Reorder Threshold', type: 'number' as const },
-      { key: 'last_restocked', label: 'Last Restocked', type: 'date' as const },
-      { key: 'warehouse_location', label: 'Warehouse Location', type: 'text' as const },
-      { key: 'reserved_quantity', label: 'Reserved Quantity', type: 'number' as const }
+    contacts: [
+      { key: 'user_id', label: 'User ID', type: 'text' as const },
+      { key: 'email', label: 'Email Address', type: 'text' as const },
+      { key: 'phone_number', label: 'Phone Number', type: 'text' as const },
+      { key: 'line_user_id', label: 'LINE User ID', type: 'text' as const },
+      { key: 'full_name', label: 'Full Name', type: 'text' as const },
+      { key: 'first_name', label: 'First Name', type: 'text' as const },
+      { key: 'last_name', label: 'Last Name', type: 'text' as const },
+      { key: 'gender', label: 'Gender', type: 'select' as const, options: ['male', 'female', 'other'] },
+      { key: 'date_of_birth', label: 'Date of Birth', type: 'date' as const },
+      { key: 'point_balance', label: 'Point Balance', type: 'number' as const },
+      { key: 'total_point_collect', label: 'Total Points Collected', type: 'number' as const },
+      { key: 'total_point_used', label: 'Total Points Used', type: 'number' as const },
+      { key: 'total_order', label: 'Total Orders', type: 'number' as const },
+      { key: 'total_sale_amount', label: 'Total Sales Amount', type: 'number' as const },
+      { key: 'avg_sale_amount_per_order', label: 'Average Order Value', type: 'number' as const },
+      { key: 'last_sale_date', label: 'Last Purchase Date', type: 'date' as const },
+      { key: 'member_tier_id', label: 'Member Tier', type: 'text' as const },
+      { key: 'status', label: 'Customer Status', type: 'select' as const, options: ['active', 'inactive', 'suspended'] },
+      { key: 'created_date', label: 'Registration Date', type: 'date' as const }
     ],
-    carts: [
-      { key: 'cart_value', label: 'Cart Value', type: 'number' as const },
-      { key: 'abandoned_date', label: 'Abandoned Date', type: 'date' as const },
-      { key: 'item_count', label: 'Items in Cart', type: 'number' as const },
-      { key: 'has_discount', label: 'Has Discount', type: 'select' as const, options: ['true', 'false'] }
-    ]
-  },
-  crm: {
-    customer_profiles: [
-      { key: 'birthday', label: 'Birthday', type: 'date' as const },
-      { key: 'anniversary_date', label: 'Anniversary', type: 'date' as const },
-      { key: 'loyalty_points', label: 'Loyalty Points', type: 'number' as const },
-      { key: 'last_purchase_date', label: 'Last Purchase', type: 'date' as const },
-      { key: 'preferred_contact', label: 'Contact Preference', type: 'select' as const, options: ['email', 'sms', 'phone', 'push'] },
-      { key: 'vip_status', label: 'VIP Status', type: 'select' as const, options: ['true', 'false'] },
-      { key: 'referral_count', label: 'Referrals Made', type: 'number' as const },
-      { key: 'subscription_status', label: 'Subscription Status', type: 'select' as const, options: ['active', 'inactive', 'paused', 'cancelled'] },
-      { key: 'engagement_score', label: 'Engagement Score', type: 'number' as const },
-      { key: 'last_campaign_interaction', label: 'Last Campaign Interaction', type: 'date' as const }
+    orders: [
+      { key: 'order_code', label: 'Order Code', type: 'text' as const },
+      { key: 'status', label: 'Order Status', type: 'select' as const, options: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] },
+      { key: 'transaction_type', label: 'Transaction Type', type: 'select' as const, options: ['normal', 'refund'] },
+      { key: 'refund_type', label: 'Refund Type', type: 'text' as const },
+      { key: 'channel_type', label: 'Channel Type', type: 'text' as const },
+      { key: 'channel_name', label: 'Channel Name', type: 'text' as const },
+      { key: 'total_price', label: 'Total Price', type: 'number' as const },
+      { key: 'total_discount', label: 'Total Discount', type: 'number' as const },
+      { key: 'service_charges', label: 'Service Charges', type: 'number' as const },
+      { key: 'net_amount', label: 'Net Amount', type: 'number' as const },
+      { key: 'grand_total', label: 'Grand Total', type: 'number' as const },
+      { key: 'points_earned', label: 'Points Earned', type: 'number' as const },
+      { key: 'user_id', label: 'Customer ID', type: 'text' as const },
+      { key: 'store_code', label: 'Store Code', type: 'text' as const },
+      { key: 'store_name', label: 'Store Name', type: 'text' as const },
+      { key: 'created_date', label: 'Order Date', type: 'date' as const },
+      { key: 'updated_date', label: 'Last Updated', type: 'date' as const }
+    ],
+    order_items: [
+      { key: 'product_code', label: 'Product Code', type: 'text' as const },
+      { key: 'product_name', label: 'Product Name', type: 'text' as const },
+      { key: 'product_category_name', label: 'Category', type: 'text' as const },
+      { key: 'brand_name', label: 'Brand', type: 'text' as const },
+      { key: 'variant_name', label: 'Product Variant', type: 'text' as const },
+      { key: 'quantity', label: 'Quantity', type: 'number' as const },
+      { key: 'unit_price', label: 'Unit Price', type: 'number' as const },
+      { key: 'discount', label: 'Item Discount', type: 'number' as const },
+      { key: 'total_price', label: 'Item Total', type: 'number' as const },
+      { key: 'review_rate', label: 'Review Rating', type: 'number' as const },
+      { key: 'is_freebie', label: 'Is Freebie', type: 'select' as const, options: ['true', 'false'] }
+    ],
+    point_histories: [
+      { key: 'note', label: 'Transaction Note', type: 'text' as const },
+      { key: 'point', label: 'Points', type: 'number' as const },
+      { key: 'balance', label: 'Balance After', type: 'number' as const },
+      { key: 'give_from', label: 'Point Source', type: 'text' as const },
+      { key: 'expire_date', label: 'Expiration Date', type: 'date' as const },
+      { key: 'user_id', label: 'Customer ID', type: 'text' as const },
+      { key: 'created_date', label: 'Transaction Date', type: 'date' as const }
     ]
   }
 };
@@ -67,21 +95,15 @@ export interface DataSourceField {
 }
 
 export const getFieldsForDataSource = (dataSource: string, collection?: string): DataSourceField[] => {
-  if (dataSource === 'mongodb' && collection) {
-    return DATA_SOURCE_FIELDS.mongodb[collection as keyof typeof DATA_SOURCE_FIELDS.mongodb] || [];
-  }
-  if (dataSource === 'crm') {
-    return DATA_SOURCE_FIELDS.crm.customer_profiles;
+  if (dataSource === 'CRM' && collection) {
+    return DATA_SOURCE_FIELDS.CRM[collection as keyof typeof DATA_SOURCE_FIELDS.CRM] || [];
   }
   return [];
 };
 
 export const getCollectionsForDataSource = (dataSource: string): string[] => {
-  if (dataSource === 'mongodb') {
-    return Object.keys(DATA_SOURCE_FIELDS.mongodb);
-  }
-  if (dataSource === 'crm') {
-    return ['customer_profiles'];
+  if (dataSource === 'CRM') {
+    return Object.keys(DATA_SOURCE_FIELDS.CRM);
   }
   return [];
 };
@@ -102,16 +124,12 @@ export const getOperatorsForFieldType = (fieldType: 'text' | 'number' | 'date' |
 };
 
 export const getDataSourcesForConditions = () => [
-  { label: 'MongoDB', value: 'mongodb' },
-  { label: 'CRM', value: 'crm' }
+  { label: 'CRM System', value: 'CRM' }
 ];
 
-export const getFieldsForCollection = (dataSource: 'mongodb' | 'crm', collection: string): DataSourceField[] => {
-  if (dataSource === 'mongodb') {
-    return DATA_SOURCE_FIELDS.mongodb[collection as keyof typeof DATA_SOURCE_FIELDS.mongodb] || [];
-  }
-  if (dataSource === 'crm') {
-    return DATA_SOURCE_FIELDS.crm[collection as keyof typeof DATA_SOURCE_FIELDS.crm] || [];
+export const getFieldsForCollection = (dataSource: 'CRM', collection: string): DataSourceField[] => {
+  if (dataSource === 'CRM') {
+    return DATA_SOURCE_FIELDS.CRM[collection as keyof typeof DATA_SOURCE_FIELDS.CRM] || [];
   }
   return [];
 };

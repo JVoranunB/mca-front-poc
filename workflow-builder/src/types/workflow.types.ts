@@ -1,10 +1,10 @@
-export type NodeType = 'trigger' | 'condition' | 'action' | 'step';
+export type NodeType = 'start' | 'trigger' | 'condition' | 'action' | 'step';
 
 export type TriggerType = 'event-based' | 'schedule-based';
 
 export interface WorkflowCondition {
   id: string;
-  dataSource: 'mongodb' | 'crm';
+  dataSource: 'CRM';
   collection?: string;
   field: string;
   fieldType: 'text' | 'number' | 'date' | 'select';
@@ -14,9 +14,16 @@ export interface WorkflowCondition {
   logicalOperator?: 'AND' | 'OR';
 }
 
+export interface StartConfig {
+  label: string;
+  description?: string;
+  merchantId?: string;
+  dataSource: 'CRM';
+}
+
 export interface TriggerConfig {
   triggerCategory: 'event-based' | 'scheduled';
-  dataSource: 'mongodb' | 'crm';
+  dataSource: 'CRM';
   merchantId?: string;
   
   // Event-based specific

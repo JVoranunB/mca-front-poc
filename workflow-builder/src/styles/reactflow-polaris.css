@@ -196,3 +196,9 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #8c9196;
 }
+
+/* Start Node Styling */
+div[data-node-type="start"] .node-icon-container {
+  background: #8B5A99 !important;
+  color: #FFFFFF !important;
+}

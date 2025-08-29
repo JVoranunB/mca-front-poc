@@ -58,7 +58,7 @@ const EventBasedConfig: React.FC<EventBasedConfigProps> = ({ config, onChange })
           onChange={(value) => handleChange('dataSource', value)}
         />
         
-        {config.dataSource === 'mongodb' && (
+        {config.dataSource === 'CRM' && (
           <>
             <Checkbox
               label="Enable MongoDB Change Streams"

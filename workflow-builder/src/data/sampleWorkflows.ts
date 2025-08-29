@@ -11,19 +11,19 @@ export const sampleWorkflows: Workflow[] = [
     updatedAt: '2024-01-15T10:00:00Z',
     nodes: [
       {
-        id: 'trigger-1',
-        type: 'trigger',
+        id: 'start-1',
+        type: 'start',
         position: { x: 100, y: 200 },
         data: {
-          label: 'New order placed',
-          type: 'trigger',
-          description: 'Monitors for new orders in real-time',
+          label: 'Order Processing Start',
+          type: 'start',
+          description: 'Starting point for order processing workflow',
           status: 'active',
           config: {
-            triggerCategory: 'event-based',
-            dataSource: 'mongodb',
-            changeStreamEnabled: true,
-            collections: ['orders']
+            label: 'Order Processing Start',
+            description: 'Starting point for order processing workflow',
+            merchantId: 'SHOP001',
+            dataSource: 'CRM'
           }
         }
       },
@@ -39,9 +39,9 @@ export const sampleWorkflows: Workflow[] = [
           conditions: [
             {
               id: 'cond-1',
-              dataSource: 'mongodb',
+              dataSource: 'CRM',
               collection: 'orders',
-              field: 'total_amount',
+              field: 'grand_total',
               fieldType: 'number',
               operator: 'greater_than',
               value: 500
@@ -83,7 +83,7 @@ export const sampleWorkflows: Workflow[] = [
     edges: [
       {
         id: 'e1',
-        source: 'trigger-1',
+        source: 'start-1',
         target: 'condition-1',
         animated: true
       },
@@ -115,21 +115,19 @@ export const sampleWorkflows: Workflow[] = [
     updatedAt: '2024-01-15T11:00:00Z',
     nodes: [
       {
-        id: 'trigger-2',
-        type: 'trigger',
+        id: 'start-2',
+        type: 'start',
         position: { x: 100, y: 200 },
         data: {
-          label: 'Daily at 2 PM EST',
-          type: 'trigger',
-          description: 'Scheduled trigger for cart recovery campaign',
+          label: 'Cart Recovery Start',
+          type: 'start',
+          description: 'Starting point for cart recovery campaign',
           status: 'active',
           config: {
-            triggerCategory: 'scheduled',
-            dataSource: 'mongodb',
-            scheduleType: 'recurring',
-            recurrencePattern: 'daily',
-            scheduleTime: '14:00',
-            timezone: 'America/New_York'
+            label: 'Cart Recovery Start',
+            description: 'Starting point for cart recovery campaign',
+            merchantId: 'SHOP001',
+            dataSource: 'CRM'
           }
         }
       },
@@ -145,19 +143,19 @@ export const sampleWorkflows: Workflow[] = [
           conditions: [
             {
               id: 'cond-2a',
-              dataSource: 'mongodb',
-              collection: 'carts',
+              dataSource: 'CRM',
+              collection: 'orders',
               field: 'status',
               fieldType: 'select',
               operator: 'equals',
-              value: 'abandoned',
-              selectOptions: ['abandoned', 'active', 'completed']
+              value: 'cancelled',
+              selectOptions: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
             },
             {
               id: 'cond-2b',
-              dataSource: 'mongodb',
-              collection: 'carts',
-              field: 'updated_at',
+              dataSource: 'CRM',
+              collection: 'orders',
+              field: 'updated_date',
               fieldType: 'date',
               operator: 'date_before',
               value: '2024-01-14',
@@ -186,7 +184,7 @@ export const sampleWorkflows: Workflow[] = [
     edges: [
       {
         id: 'e4',
-        source: 'trigger-2',
+        source: 'start-2',
         target: 'condition-2',
         animated: true
       },
@@ -210,19 +208,19 @@ export const sampleWorkflows: Workflow[] = [
     updatedAt: '2024-01-15T12:00:00Z',
     nodes: [
       {
-        id: 'trigger-3',
-        type: 'trigger',
+        id: 'start-3',
+        type: 'start',
         position: { x: 100, y: 200 },
         data: {
-          label: 'New customer registered',
-          type: 'trigger',
-          description: 'Triggered when new customer profile is created',
+          label: 'Customer Onboarding Start',
+          type: 'start',
+          description: 'Starting point for new customer welcome series',
           status: 'active',
           config: {
-            triggerCategory: 'event-based',
-            dataSource: 'crm',
-            changeStreamEnabled: true,
-            collections: ['customer_profiles']
+            label: 'Customer Onboarding Start',
+            description: 'Starting point for new customer welcome series',
+            merchantId: 'SHOP001',
+            dataSource: 'CRM'
           }
         }
       },
@@ -238,9 +236,9 @@ export const sampleWorkflows: Workflow[] = [
           conditions: [
             {
               id: 'cond-3',
-              dataSource: 'crm',
-              collection: 'customer_profiles',
-              field: 'total_orders',
+              dataSource: 'CRM',
+              collection: 'contacts',
+              field: 'total_order',
               fieldType: 'number',
               operator: 'equals',
               value: 0
@@ -298,7 +296,7 @@ export const sampleWorkflows: Workflow[] = [
     edges: [
       {
         id: 'e6',
-        source: 'trigger-3',
+        source: 'start-3',
         target: 'condition-3',
         animated: true
       },
@@ -338,22 +336,19 @@ export const sampleWorkflows: Workflow[] = [
     updatedAt: '2024-01-15T13:00:00Z',
     nodes: [
       {
-        id: 'trigger-4',
-        type: 'trigger',
+        id: 'start-4',
+        type: 'start',
         position: { x: 100, y: 200 },
         data: {
-          label: 'Weekly inventory check',
-          type: 'trigger',
-          description: 'Every Monday at 9 AM to review inventory levels',
+          label: 'Inventory Check Start',
+          type: 'start',
+          description: 'Starting point for inventory monitoring workflow',
           status: 'active',
           config: {
-            triggerCategory: 'scheduled',
-            dataSource: 'mongodb',
-            scheduleType: 'recurring',
-            recurrencePattern: 'weekly',
-            dayOfWeek: 1,
-            scheduleTime: '09:00',
-            timezone: 'UTC'
+            label: 'Inventory Check Start',
+            description: 'Starting point for inventory monitoring workflow',
+            merchantId: 'SHOP001',
+            dataSource: 'CRM'
           }
         }
       },
@@ -369,12 +364,12 @@ export const sampleWorkflows: Workflow[] = [
           conditions: [
             {
               id: 'cond-4',
-              dataSource: 'mongodb',
-              collection: 'inventory',
-              field: 'quantity',
-              fieldType: 'number',
-              operator: 'less_than',
-              value: 10
+              dataSource: 'CRM',
+              collection: 'products',
+              field: 'created_date',
+              fieldType: 'date',
+              operator: 'date_before',
+              value: '2024-01-01'
             }
           ]
         }
@@ -414,7 +409,7 @@ export const sampleWorkflows: Workflow[] = [
     edges: [
       {
         id: 'e10',
-        source: 'trigger-4',
+        source: 'start-4',
         target: 'condition-4',
         animated: true
       },
