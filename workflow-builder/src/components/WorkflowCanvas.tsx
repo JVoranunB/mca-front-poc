@@ -30,6 +30,8 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     onConnect,
     selectNode,
     selectEdge,
+    selectedEdge,
+    deleteEdge,
     addNode
   } = useWorkflowStore();
   
@@ -75,6 +77,30 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectEdge(edge as any);
   }, [selectEdge]);
+
+  // Handle edge context menu (right-click)
+  const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: any) => {
+    event.preventDefault();
+    const confirmDelete = window.confirm('Delete this connection?');
+    if (confirmDelete) {
+      deleteEdge(edge.id);
+      selectEdge(null);
+    }
+  }, [deleteEdge, selectEdge]);
+
+  // Handle edge deletion with keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedEdge) {
+        event.preventDefault();
+        deleteEdge(selectedEdge.id);
+        selectEdge(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedEdge, deleteEdge, selectEdge]);
   
   const onPaneClick = useCallback(() => {
     selectNode(null);
@@ -187,6 +213,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
         onInit={onInit}
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
+        onEdgeContextMenu={onEdgeContextMenu}
         onPaneClick={onPaneClick}
         onDrop={onDrop}
         onDragOver={onDragOver}

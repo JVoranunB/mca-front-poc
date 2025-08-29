@@ -24,6 +24,14 @@
 .react-flow__edge.selected .react-flow__edge-path {
   stroke: #5C6AC4;
   stroke-width: 3;
+  stroke-dasharray: 5, 5;
+  animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
 }
 
 .react-flow__edge-text {
