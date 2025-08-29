@@ -86,8 +86,8 @@ const WorkflowBuilderPage = () => {
       const nodeTemplate = JSON.parse(nodeTemplateData) as NodeTemplate;
       
       const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX - reactFlowBounds.left - 140,
-        y: event.clientY - reactFlowBounds.top - 30,
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
       });
       
       const newNode: WorkflowNode = {
