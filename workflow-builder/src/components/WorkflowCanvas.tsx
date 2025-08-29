@@ -81,7 +81,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     selectEdge(null);
   }, [selectNode, selectEdge]);
 
-  // Custom connection validation to ensure proper handle connections
+  // Custom connection validation to ensure proper handle connections and sequential order
   const isValidConnection = useCallback((connection: any) => {
     // Ensure we're connecting from output (source) to input (target)
     // Source handles should be 'output', 'then', or 'otherwise'
@@ -92,14 +92,78 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     const isValidSource = !connection.sourceHandle || validSourceHandles.includes(connection.sourceHandle);
     const isValidTarget = !connection.targetHandle || validTargetHandles.includes(connection.targetHandle);
     
-    return isValidSource && isValidTarget;
-  }, []);
+    if (!isValidSource || !isValidTarget) {
+      return false;
+    }
+
+    // Get source and target nodes
+    const sourceNode = nodes.find(node => node.id === connection.source);
+    const targetNode = nodes.find(node => node.id === connection.target);
+    
+    if (!sourceNode || !targetNode) {
+      return false;
+    }
+
+    // Sequential connection validation based on node positions
+    // Nodes can only connect to nodes that are positioned to their right and within reasonable vertical range
+    const sourceX = sourceNode.position.x;
+    const sourceY = sourceNode.position.y;
+    const targetX = targetNode.position.x;
+    const targetY = targetNode.position.y;
+
+    // Target must be to the right of source (left-to-right flow)
+    if (targetX <= sourceX + 50) { // Adding 50px buffer for same-column positioning
+      return false;
+    }
+
+    // Prevent connecting to nodes that are too far to the right (skip prevention)
+    // Find all nodes between source and target horizontally
+    const nodesBetween = nodes.filter(node => {
+      const nodeX = node.position.x;
+      const nodeY = node.position.y;
+      
+      // Node is between source and target horizontally
+      const isBetweenHorizontally = nodeX > sourceX + 50 && nodeX < targetX - 50;
+      
+      // Node is within reasonable vertical range (same workflow level)
+      const verticalDistance = Math.abs(nodeY - sourceY);
+      const isInVerticalRange = verticalDistance < 200; // Allow some vertical spacing
+      
+      // Exclude the source and target nodes themselves
+      return isBetweenHorizontally && isInVerticalRange && 
+             node.id !== connection.source && node.id !== connection.target;
+    });
+
+    // If there are nodes in between, prevent the connection (no crossing over)
+    if (nodesBetween.length > 0) {
+      console.log('Connection blocked: Cannot skip over intermediate nodes');
+      return false;
+    }
+
+    return true;
+  }, [nodes]);
 
   // Handle connection line style during drag
   const connectionLineStyle = {
     stroke: '#5C6AC4',
     strokeWidth: 2,
   };
+
+  // Custom connection line component for visual feedback
+  const connectionLineComponent = useCallback((props: any) => {
+    return (
+      <g>
+        <path
+          fill="none"
+          stroke={props.connectionLineStyle?.stroke || '#5C6AC4'}
+          strokeWidth={props.connectionLineStyle?.strokeWidth || 2}
+          className="animated"
+          d={props.connectionPath}
+          markerEnd="url(#react-flow__arrowclosed)"
+        />
+      </g>
+    );
+  }, []);
   
   const edgeOptions = {
     animated: true,
@@ -131,6 +195,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
         defaultEdgeOptions={edgeOptions}
         isValidConnection={isValidConnection}
         connectionLineStyle={connectionLineStyle}
+        connectionLineComponent={connectionLineComponent}
         fitView
       >
         <Background color="#aaa" gap={16} />
