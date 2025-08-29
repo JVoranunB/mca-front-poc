@@ -5,43 +5,11 @@ export const nodeTemplates: NodeTemplate[] = [
   // Conditions
   {
     type: 'condition',
-    label: 'Check collection status',
-    description: 'Verify collection published status',
+    label: 'Condition',
+    description: 'Check data conditions with customizable rules',
     icon: 'HelpIcon',
     category: 'conditions',
     defaultConfig: {}
-  },
-  {
-    type: 'condition',
-    label: 'Check order value',
-    description: 'Compare order total amount',
-    icon: 'HelpIcon',
-    category: 'conditions',
-    defaultConfig: {
-      comparison: 'greater_than',
-      value: 100
-    }
-  },
-  {
-    type: 'condition',
-    label: 'Check customer tags',
-    description: 'Verify customer has specific tags',
-    icon: 'HelpIcon',
-    category: 'conditions',
-    defaultConfig: {
-      tags: []
-    }
-  },
-  {
-    type: 'condition',
-    label: 'Check inventory',
-    description: 'Verify product stock levels',
-    icon: 'HelpIcon',
-    category: 'conditions',
-    defaultConfig: {
-      comparison: 'greater_than',
-      quantity: 0
-    }
   },
   
   // Actions - Marketing Automation
