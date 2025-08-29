@@ -32,6 +32,7 @@ interface WorkflowState {
   loadWorkflow: (workflowId: string) => void;
   clearWorkflow: () => void;
   deleteWorkflow: (workflowId: string) => void;
+  updateWorkflowName: (name: string) => void;
   
   getAllWorkflows: () => WorkflowSummary[];
   createWorkflowFromType: (triggerType: TriggerType) => string;
@@ -242,6 +243,29 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({
       workflows,
       currentWorkflow: get().currentWorkflow?.id === workflowId ? null : get().currentWorkflow
+    });
+  },
+
+  updateWorkflowName: (name) => {
+    const currentState = get();
+    if (!currentState.currentWorkflow) return;
+
+    const updatedWorkflow = {
+      ...currentState.currentWorkflow,
+      name,
+      updatedAt: new Date().toISOString()
+    };
+
+    const workflows = currentState.workflows.map(w => 
+      w.id === updatedWorkflow.id ? updatedWorkflow : w
+    );
+
+    localStorage.setItem('workflows', JSON.stringify(workflows));
+    
+    set({
+      workflows,
+      currentWorkflow: updatedWorkflow,
+      isDirty: true
     });
   },
   

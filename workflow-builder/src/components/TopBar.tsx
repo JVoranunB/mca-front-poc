@@ -9,14 +9,16 @@ import {
   Toast,
   Frame,
   Badge,
-  InlineStack
+  InlineStack,
+  Icon
 } from '@shopify/polaris';
 import {
   SaveIcon,
   FolderIcon,
   CheckCircleIcon,
   DeleteIcon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  EditIcon
 } from '@shopify/polaris-icons';
 import useWorkflowStore from '../store/workflowStore';
 
@@ -33,12 +35,15 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastError, setToastError] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editingName, setEditingName] = useState('');
   
   const {
     saveWorkflow,
     loadWorkflow,
     clearWorkflow,
     deleteWorkflow,
+    updateWorkflowName,
     workflows,
     currentWorkflow,
     validateWorkflow,
@@ -100,6 +105,36 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
     setToastError(!isValid);
     setShowToast(true);
   };
+
+  const handleNameClick = () => {
+    if (currentWorkflow) {
+      setEditingName(currentWorkflow.name);
+      setIsEditingName(true);
+    }
+  };
+
+  const handleNameSave = () => {
+    if (editingName.trim() && currentWorkflow && editingName !== currentWorkflow.name) {
+      updateWorkflowName(editingName.trim());
+      setToastMessage('Workflow name updated');
+      setToastError(false);
+      setShowToast(true);
+    }
+    setIsEditingName(false);
+  };
+
+  const handleNameCancel = () => {
+    setEditingName('');
+    setIsEditingName(false);
+  };
+
+  const handleNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleNameSave();
+    } else if (e.key === 'Escape') {
+      handleNameCancel();
+    }
+  };
   
   const workflowOptions = workflows.map(w => ({
     label: `${w.name} (${new Date(w.createdAt).toLocaleDateString()})`,
@@ -127,9 +162,51 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
               Workflow Builder
             </Text>
             {currentWorkflow && (
-              <Badge tone="info">
-                {currentWorkflow.name}
-              </Badge>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {isEditingName ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <TextField
+                      value={editingName}
+                      onChange={setEditingName}
+                      onKeyDown={handleNameKeyPress}
+                      onBlur={handleNameSave}
+                      autoFocus
+                      size="slim"
+                      autoComplete="off"
+                      placeholder="Enter workflow name"
+                      style={{ minWidth: '200px' }}
+                    />
+                  </div>
+                ) : (
+                  <div 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid transparent'
+                    }}
+                    onClick={handleNameClick}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f6f6f7';
+                      e.currentTarget.style.border = '1px solid #e1e3e5';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.border = '1px solid transparent';
+                    }}
+                  >
+                    <Badge tone="info">
+                      {currentWorkflow.name}
+                    </Badge>
+                    <div style={{ opacity: 0.6 }}>
+                      <Icon source={EditIcon} tone="subdued" />
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
             {isDirty && (
               <Badge tone="attention">
