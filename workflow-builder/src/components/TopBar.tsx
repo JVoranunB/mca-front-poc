@@ -165,17 +165,18 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {isEditingName ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <TextField
-                      value={editingName}
-                      onChange={setEditingName}
-                      onKeyDown={handleNameKeyPress}
-                      onBlur={handleNameSave}
-                      autoFocus
-                      size="slim"
-                      autoComplete="off"
-                      placeholder="Enter workflow name"
-                      style={{ minWidth: '200px' }}
-                    />
+                    <div onKeyDown={handleNameKeyPress} style={{ minWidth: '200px' }}>
+                      <TextField
+                        label=""
+                        value={editingName}
+                        onChange={setEditingName}
+                        onBlur={handleNameSave}
+                        autoFocus
+                        size="slim"
+                        autoComplete="off"
+                        placeholder="Enter workflow name"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div 
@@ -223,8 +224,7 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
           <InlineStack gap="200">
             <Button
               icon={SaveIcon}
-              onClick={() => setIsSaveModalOpen(true)}
-              variant="primary"
+              onClick={() => setIsSaveModalOpen(true)}              
             >
               Save
             </Button>

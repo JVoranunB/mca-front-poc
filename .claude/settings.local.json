@@ -10,7 +10,8 @@
       "Bash(npm run lint)",
       "Bash(sed:*)",
       "Bash(npx tsc:*)",
-      "Read(c:\\Work\\Rocket\\mca-front-poc/**)"
+      "Read(c:\\Work\\Rocket\\mca-front-poc/**)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
