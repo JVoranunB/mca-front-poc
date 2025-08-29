@@ -49,6 +49,7 @@ const StartNode = memo(({ data }: NodeProps) => {
       
       {/* Output handle on the right */}
       <Handle
+        id="output"
         type="source"
         position={Position.Right}
         style={{

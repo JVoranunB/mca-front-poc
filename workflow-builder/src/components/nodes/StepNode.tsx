@@ -9,6 +9,7 @@ const StepNode = memo(({ data }: NodeProps) => {
   return (
     <div style={{ minWidth: '200px' }}>
       <Handle
+        id="input"
         type="target"
         position={Position.Left}
         style={{
@@ -51,6 +52,7 @@ const StepNode = memo(({ data }: NodeProps) => {
       </Card>
       
       <Handle
+        id="output"
         type="source"
         position={Position.Right}
         style={{

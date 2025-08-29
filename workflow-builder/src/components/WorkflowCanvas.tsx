@@ -80,6 +80,26 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     selectNode(null);
     selectEdge(null);
   }, [selectNode, selectEdge]);
+
+  // Custom connection validation to ensure proper handle connections
+  const isValidConnection = useCallback((connection: any) => {
+    // Ensure we're connecting from output (source) to input (target)
+    // Source handles should be 'output', 'then', or 'otherwise'
+    // Target handles should be 'input'
+    const validSourceHandles = ['output', 'then', 'otherwise'];
+    const validTargetHandles = ['input'];
+    
+    const isValidSource = !connection.sourceHandle || validSourceHandles.includes(connection.sourceHandle);
+    const isValidTarget = !connection.targetHandle || validTargetHandles.includes(connection.targetHandle);
+    
+    return isValidSource && isValidTarget;
+  }, []);
+
+  // Handle connection line style during drag
+  const connectionLineStyle = {
+    stroke: '#5C6AC4',
+    strokeWidth: 2,
+  };
   
   const edgeOptions = {
     animated: true,
@@ -109,6 +129,8 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={edgeOptions}
+        isValidConnection={isValidConnection}
+        connectionLineStyle={connectionLineStyle}
         fitView
       >
         <Background color="#aaa" gap={16} />

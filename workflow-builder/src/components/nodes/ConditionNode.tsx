@@ -10,6 +10,7 @@ const ConditionNode = memo(({ data }: NodeProps) => {
   return (
     <div style={{ minWidth: '320px' }}>
       <Handle
+        id="input"
         type="target"
         position={Position.Left}
         style={{
