@@ -224,7 +224,8 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
           <InlineStack gap="200">
             <Button
               icon={SaveIcon}
-              onClick={() => setIsSaveModalOpen(true)}              
+              onClick={() => setIsSaveModalOpen(true)}
+              variant="primary"              
             >
               Save
             </Button>

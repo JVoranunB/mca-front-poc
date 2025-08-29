@@ -243,3 +243,73 @@ div[data-node-type="start"] .node-icon-container {
   background: #8B5A99 !important;
   color: #FFFFFF !important;
 }
+
+/* Polaris Primary Button Custom Blue Override */
+.Polaris-Button--variantPrimary {
+  background: #0061ff !important; /* Custom blue background */
+  border: 1px solid #0061ff !important; /* Custom blue border */
+  color: #ffffff !important; /* White text */
+  box-shadow: none !important; /* Remove any default shadow */
+}
+
+.Polaris-Button--variantPrimary:hover {
+  background: #0051d9 !important; /* Darker shade on hover */
+  border: 1px solid #0051d9 !important;
+  box-shadow: none !important;
+}
+
+.Polaris-Button--variantPrimary:active {
+  background: #0041b3 !important; /* Even darker when pressed */
+  border: 1px solid #0041b3 !important;
+  box-shadow: none !important;
+}
+
+.Polaris-Button--variantPrimary:focus {
+  background: #0061ff !important;
+  border: 1px solid #0061ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 97, 255, 0.3) !important; /* Custom blue focus ring */
+}
+
+.Polaris-Button--variantPrimary .Polaris-Text--root {
+  color: #ffffff !important;  
+}
+
+/* Polaris Toast Custom Blue Override */
+.Polaris-Frame-Toast {
+  background: #0061ff !important; /* Custom blue background */
+  border: 1px solid #0061ff !important;
+  color: #ffffff !important;
+}
+
+.Polaris-Frame-Toast .Polaris-Text--root {
+  color: #ffffff !important; /* White text in toast */
+}
+
+.Polaris-Frame-Toast .Polaris-Button {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: 1px solid #ffffff !important;
+}
+
+.Polaris-Frame-Toast .Polaris-Button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Success Toast with blue theme */
+.Polaris-Frame-Toast--tonePrimary,
+.Polaris-Frame-Toast--toneSuccess {
+  background: #0061ff !important;
+  border-color: #0061ff !important;
+}
+
+/* Action button in Toast */
+.Polaris-Frame-Toast__Action .Polaris-Button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.Polaris-Frame-Toast__Action .Polaris-Button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
