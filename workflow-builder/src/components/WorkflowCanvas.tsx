@@ -6,11 +6,12 @@ import {
   MiniMap,
   ConnectionMode,
   MarkerType,
+  type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { nodeTypes } from './nodes';
 import useWorkflowStore from '../store/workflowStore';
-import type { WorkflowNode, NodeData, StartConfig } from '../types/workflow.types';
+import type { WorkflowNode, WorkflowEdge, NodeData, StartConfig } from '../types/workflow.types';
 
 interface WorkflowCanvasProps {
   onDrop: (event: React.DragEvent) => void;
@@ -38,7 +39,10 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
   // Auto-create start node when canvas is empty
   useEffect(() => {
     const hasStartNode = nodes.some(node => node.type === 'start');
-    if (nodes.length === 0 || !hasStartNode) {
+    
+    // Only add start node if there are no start-type nodes
+    // Store now handles duplicate prevention, so we can safely call addNode
+    if (!hasStartNode) {
       const startNode: WorkflowNode = {
         id: 'start-node',
         type: 'start',
@@ -56,10 +60,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
         } as NodeData
       };
       
-      // Only add if no start node exists
-      if (!hasStartNode) {
-        addNode(startNode);
-      }
+      addNode(startNode); // Store will handle duplicate prevention
     }
   }, [nodes, addNode]);
   
@@ -79,7 +80,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
   }, [selectEdge]);
 
   // Handle edge context menu (right-click)
-  const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: any) => {
+  const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: WorkflowEdge) => {
     event.preventDefault();
     const confirmDelete = window.confirm('Delete this connection?');
     if (confirmDelete) {
@@ -108,7 +109,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
   }, [selectNode, selectEdge]);
 
   // Custom connection validation to ensure proper handle connections and sequential order
-  const isValidConnection = useCallback((connection: any) => {
+  const isValidConnection = useCallback((connection: WorkflowEdge | Connection) => {
     // Ensure we're connecting from output (source) to input (target)
     // Source handles should be 'output', 'then', or 'otherwise'
     // Target handles should be 'input'
@@ -135,7 +136,6 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     const sourceX = sourceNode.position.x;
     const sourceY = sourceNode.position.y;
     const targetX = targetNode.position.x;
-    const targetY = targetNode.position.y;
 
     // Target must be to the right of source (left-to-right flow)
     if (targetX <= sourceX + 50) { // Adding 50px buffer for same-column positioning
@@ -177,7 +177,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
   };
 
   // Custom connection line component for enhanced visual feedback
-  const connectionLineComponent = useCallback((props: any) => {
+  const connectionLineComponent = useCallback((props: { fromX: number; fromY: number; toX: number; toY: number; connectionStatus?: 'valid' | 'invalid' | null }) => {
     const { fromX, fromY, toX, toY, connectionStatus } = props;
     
     // Calculate bezier curve path for smoother connection line

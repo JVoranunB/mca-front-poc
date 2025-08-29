@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { Connection, NodeChange, EdgeChange } from '@xyflow/react';
-import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, WorkflowSummary, TriggerType } from '../types/workflow.types';
+import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, WorkflowSummary, TriggerType, StartConfig } from '../types/workflow.types';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -101,10 +101,19 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
   
   addNode: (node) => {
-    set((state) => ({
-      nodes: [...state.nodes, node],
-      isDirty: true
-    }));
+    set((state) => {
+      // Check if node with same ID already exists
+      const existingNode = state.nodes.find(n => n.id === node.id);
+      if (existingNode) {
+        console.warn(`Node with id "${node.id}" already exists, skipping duplicate`);
+        return state; // Return unchanged state
+      }
+      
+      return {
+        nodes: [...state.nodes, node],
+        isDirty: true
+      };
+    });
   },
   
   updateNode: (nodeId, data) => {
@@ -179,7 +188,7 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const currentState = get();
     
     // For start node workflows, default to event-based
-    let triggerType: TriggerType = 'event-based';
+    const triggerType: TriggerType = 'event-based';
     
     const workflow: Workflow = {
       id: currentState.currentWorkflow?.id || Date.now().toString(),
@@ -288,7 +297,7 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
     
     // Validate start node configurations
     startNodes.forEach((node) => {
-      const config = node.data.config as any;
+      const config = node.data.config as StartConfig | undefined;
       
       if (!config) {
         errors.push({
