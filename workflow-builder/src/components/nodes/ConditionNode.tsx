@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Card, Text, Badge, InlineStack, BlockStack, Icon, Divider } from '@shopify/polaris';
 import { Icons } from '../../utils/icons';
 import type { NodeData } from '../../types/workflow.types';
+import { getOperatorLabel } from '../../utils/dataSourceFields';
 
 const ConditionNode = memo(({ data }: NodeProps) => {
   const nodeData = data as NodeData;
@@ -53,21 +54,54 @@ const ConditionNode = memo(({ data }: NodeProps) => {
               {nodeData.conditions.map((condition, index: number) => (
                 <BlockStack key={condition.id} gap="100">
                   {index > 0 && condition.logicalOperator && (
-                    <Badge tone="info">{condition.logicalOperator}</Badge>
+                    <InlineStack gap="100">
+                      <Badge tone="info" size="small">
+                        {condition.logicalOperator}
+                      </Badge>
+                    </InlineStack>
                   )}
-                  <InlineStack gap="100" wrap={false}>
-                    <Text as="span" variant="bodySm">
-                      {condition.field}
-                    </Text>
-                    <Badge size="small">
-                      {condition.operator.replace('_', ' ')}
-                    </Badge>
-                    {condition.value && (
-                      <Text as="span" variant="bodySm" fontWeight="medium">
-                        {condition.value}
-                      </Text>
-                    )}
-                  </InlineStack>
+                  <Card padding="100">
+                    <BlockStack gap="100">
+                      {condition.dataSource && (
+                        <InlineStack gap="100" align="start">
+                          <Badge size="small">
+                            {condition.dataSource.toUpperCase()}
+                          </Badge>
+                          {condition.collection && (
+                            <Badge size="small">
+                              {condition.collection}
+                            </Badge>
+                          )}
+                        </InlineStack>
+                      )}
+                      <InlineStack gap="100" wrap={false} align="center">
+                        <InlineStack gap="050">
+                          {condition.fieldType === 'number' && (
+                            <Icon source={Icons.Default} tone="subdued" />
+                          )}
+                          {condition.fieldType === 'date' && (
+                            <Icon source={Icons.Timer} tone="subdued" />
+                          )}
+                          {condition.fieldType === 'select' && (
+                            <Icon source={Icons.ChevronDown} tone="subdued" />
+                          )}
+                          <Text as="span" variant="bodySm" fontWeight="medium">
+                            {condition.field}
+                          </Text>
+                        </InlineStack>
+                        <Badge size="small" tone="success">
+                          {getOperatorLabel(condition.operator)}
+                        </Badge>
+                        {!['is_empty', 'is_not_empty'].includes(condition.operator) && condition.value !== undefined && (
+                          <Text as="span" variant="bodySm" fontWeight="semibold">
+                            {condition.fieldType === 'date' 
+                              ? new Date(String(condition.value)).toLocaleDateString()
+                              : String(condition.value)}
+                          </Text>
+                        )}
+                      </InlineStack>
+                    </BlockStack>
+                  </Card>
                 </BlockStack>
               ))}
             </BlockStack>

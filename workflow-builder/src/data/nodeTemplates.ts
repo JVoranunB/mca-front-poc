@@ -1,45 +1,35 @@
 import type { NodeTemplate } from '../types/workflow.types';
 
 export const nodeTemplates: NodeTemplate[] = [
-  // Triggers
+  // Triggers - Flexible Event-Based and Scheduled
   {
     type: 'trigger',
-    label: 'Collection created',
-    description: 'Triggers when a new collection is created',
-    icon: 'FolderIcon',
+    label: 'Event-based trigger',
+    description: 'Triggers when data changes occur in real-time (MongoDB change streams)',
+    icon: 'PlayIcon',
     category: 'triggers',
     defaultConfig: {
-      collection_type: 'all'
+      triggerCategory: 'event-based',
+      dataSource: 'mongodb',
+      changeStreamEnabled: true,
+      collections: ['orders'],
+      merchantId: ''
     }
   },
   {
     type: 'trigger',
-    label: 'Order created',
-    description: 'Triggers when a new order is placed',
-    icon: 'CartIcon',
+    label: 'Scheduled trigger',
+    description: 'Triggers based on date/time schedules with timezone support',
+    icon: 'ClockIcon',
     category: 'triggers',
     defaultConfig: {
-      order_status: 'any'
-    }
-  },
-  {
-    type: 'trigger',
-    label: 'Customer created',
-    description: 'Triggers when a new customer signs up',
-    icon: 'PersonIcon',
-    category: 'triggers',
-    defaultConfig: {
-      customer_group: 'all'
-    }
-  },
-  {
-    type: 'trigger',
-    label: 'Product updated',
-    description: 'Triggers when a product is modified',
-    icon: 'ProductIcon',
-    category: 'triggers',
-    defaultConfig: {
-      update_type: 'any'
+      triggerCategory: 'scheduled',
+      dataSource: 'crm',
+      scheduleType: 'recurring',
+      recurrencePattern: 'daily',
+      scheduleTime: '09:00',
+      timezone: 'UTC',
+      merchantId: ''
     }
   },
   
@@ -85,72 +75,77 @@ export const nodeTemplates: NodeTemplate[] = [
     }
   },
   
-  // Actions
+  // Actions - Marketing Automation
   {
     type: 'action',
-    label: 'Add order line item',
-    description: 'Add a product to the order',
-    icon: 'PlusMinorIcon',
+    label: 'Send SMS notification',
+    description: 'Send SMS with dynamic content based on trigger data',
+    icon: 'MobileIcon',
     category: 'actions',
     defaultConfig: {
-      product_id: '',
-      quantity: 1
+      template: '',
+      phoneField: 'phone_number',
+      includeCustomerData: true
     }
   },
   {
     type: 'action',
-    label: 'Send HTTP request',
-    description: 'Make an API call to external service',
+    label: 'Send email campaign',
+    description: 'Send personalized email with campaign templates',
+    icon: 'EmailIcon',
+    category: 'actions',
+    defaultConfig: {
+      campaignTemplate: '',
+      emailField: 'email',
+      subject: '',
+      includeCustomerData: true
+    }
+  },
+  {
+    type: 'action',
+    label: 'Trigger webhook',
+    description: 'Call external API with customer and trigger data',
     icon: 'ExportIcon',
     category: 'actions',
     defaultConfig: {
       url: '',
       method: 'POST',
+      includeCustomerData: true,
       headers: {}
     }
   },
   {
     type: 'action',
+    label: 'Update customer data',
+    description: 'Update customer profile fields in CRM',
+    icon: 'CustomerIcon',
+    category: 'actions',
+    defaultConfig: {
+      updates: {},
+      dataSource: 'crm'
+    }
+  },
+  {
+    type: 'action',
+    label: 'Issue reward',
+    description: 'Issue points, coupons, or other rewards to customer',
+    icon: 'GiftIcon',
+    category: 'actions',
+    defaultConfig: {
+      rewardType: 'points',
+      amount: 100,
+      expiryDays: 30
+    }
+  },
+  {
+    type: 'action',
     label: 'Add tags',
-    description: 'Add tags to resource',
+    description: 'Add tags to customer profile',
     icon: 'HashtagIcon',
     category: 'actions',
     defaultConfig: {
-      tags: []
-    }
-  },
-  {
-    type: 'action',
-    label: 'Send email',
-    description: 'Send notification email',
-    icon: 'NotificationIcon',
-    category: 'actions',
-    defaultConfig: {
-      to: '',
-      subject: '',
-      template: ''
-    }
-  },
-  {
-    type: 'action',
-    label: 'Update inventory',
-    description: 'Adjust product stock levels',
-    icon: 'ArchiveIcon',
-    category: 'actions',
-    defaultConfig: {
-      adjustment_type: 'set',
-      quantity: 0
-    }
-  },
-  {
-    type: 'action',
-    label: 'Create discount',
-    description: 'Generate a discount code',
-    icon: 'MoneyIcon',
-    category: 'actions',
-    defaultConfig: {
-      discount_type: 'percentage',
-      value: 10
+      tags: [],
+      dataSource: 'crm'
     }
   },
   

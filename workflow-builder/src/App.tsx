@@ -12,7 +12,7 @@ import PropertiesSidebar from './components/PropertiesSidebar';
 import WorkflowCanvas from './components/WorkflowCanvas';
 import useWorkflowStore from './store/workflowStore';
 import type { NodeTemplate, WorkflowNode } from './types/workflow.types';
-import { sampleNodes, sampleEdges } from './data/sampleWorkflows';
+import { sampleWorkflows } from './data/sampleWorkflows';
 
 function App() {
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
@@ -21,12 +21,15 @@ function App() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // Load sample workflow on initial load if no nodes exist
+    // Load first sample workflow on initial load if no nodes exist
     // Only run once on mount to prevent duplicate loading
     const store = useWorkflowStore.getState();
     if (store.nodes.length === 0 && store.edges.length === 0) {
-      sampleNodes.forEach(node => store.addNode(node));
-      sampleEdges.forEach(edge => store.addEdge(edge));
+      const firstSample = sampleWorkflows[0];
+      if (firstSample) {
+        firstSample.nodes.forEach((node: WorkflowNode) => store.addNode(node));
+        firstSample.edges.forEach((edge) => store.addEdge(edge));
+      }
     }
     setIsLoading(false);
   }, []); // Empty dependency array to run only once

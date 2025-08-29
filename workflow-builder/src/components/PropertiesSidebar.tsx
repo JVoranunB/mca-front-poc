@@ -9,13 +9,15 @@ import {
   InlineStack,
   Badge,
   FormLayout,
-  Checkbox,
   Divider,
   EmptyState
 } from '@shopify/polaris';
 import { Icons } from '../utils/icons';
 import useWorkflowStore from '../store/workflowStore';
-import type { WorkflowCondition } from '../types/workflow.types';
+import type { WorkflowCondition, TriggerConfig } from '../types/workflow.types';
+import EventBasedConfig from './triggers/EventBasedConfig';
+import ScheduledConfig from './triggers/ScheduledConfig';
+import { getDataSourcesForConditions, getCollectionsForDataSource, getFieldsForCollection, type DataSourceField } from '../utils/dataSourceFields';
 
 const PropertiesSidebar: React.FC = () => {
   const { selectedNode, updateNode, deleteNode } = useWorkflowStore();
@@ -54,7 +56,9 @@ const PropertiesSidebar: React.FC = () => {
   const addCondition = () => {
     const newCondition: WorkflowCondition = {
       id: Date.now().toString(),
+      dataSource: 'mongodb',
       field: '',
+      fieldType: 'text',
       operator: 'equals',
       value: '',
       logicalOperator: conditions.length > 0 ? 'AND' : undefined
@@ -101,24 +105,40 @@ const PropertiesSidebar: React.FC = () => {
   
   const renderConfigFields = () => {
     if (selectedNode.data.type === 'trigger') {
+      const config = localConfig as TriggerConfig;
+      
+      if (config.triggerCategory === 'event-based') {
+        return (
+          <EventBasedConfig
+            config={config}
+            onChange={(newConfig) => {
+              setLocalConfig(newConfig);
+              if (selectedNode) {
+                updateNode(selectedNode.id, { config: newConfig });
+              }
+            }}
+          />
+        );
+      }
+      
+      if (config.triggerCategory === 'scheduled') {
+        return (
+          <ScheduledConfig
+            config={config}
+            onChange={(newConfig) => {
+              setLocalConfig(newConfig);
+              if (selectedNode) {
+                updateNode(selectedNode.id, { config: newConfig });
+              }
+            }}
+          />
+        );
+      }
+      
       return (
-        <>
-          <Select
-            label="Trigger type"
-            options={[
-              { label: 'All collections', value: 'all' },
-              { label: 'Smart collections only', value: 'smart' },
-              { label: 'Manual collections only', value: 'manual' }
-            ]}
-            value={String(localConfig.collection_type || 'all')}
-            onChange={(value) => handleConfigChange('collection_type', value)}
-          />
-          <Checkbox
-            label="Include draft collections"
-            checked={Boolean(localConfig.include_drafts || false)}
-            onChange={(value) => handleConfigChange('include_drafts', value)}
-          />
-        </>
+        <Text as="p" variant="bodySm" tone="subdued">
+          Select a trigger category to configure options
+        </Text>
       );
     }
     
@@ -195,6 +215,43 @@ const PropertiesSidebar: React.FC = () => {
     return null;
   };
   
+  const getOperatorOptions = (fieldType?: string) => {
+    const baseOptions = [
+      { label: 'Equals', value: 'equals' },
+      { label: 'Not equals', value: 'not_equals' },
+      { label: 'Is empty', value: 'is_empty' },
+      { label: 'Is not empty', value: 'is_not_empty' }
+    ];
+    
+    if (fieldType === 'number') {
+      return [
+        ...baseOptions,
+        { label: 'Greater than', value: 'greater_than' },
+        { label: 'Less than', value: 'less_than' },
+        { label: 'Greater or equal', value: 'greater_equal' },
+        { label: 'Less or equal', value: 'less_equal' }
+      ];
+    }
+    
+    if (fieldType === 'text') {
+      return [
+        ...baseOptions,
+        { label: 'Contains', value: 'contains' },
+        { label: 'Does not contain', value: 'not_contains' }
+      ];
+    }
+    
+    if (fieldType === 'date') {
+      return [
+        ...baseOptions,
+        { label: 'Before', value: 'date_before' },
+        { label: 'After', value: 'date_after' }
+      ];
+    }
+    
+    return baseOptions;
+  };
+  
   return (
     <div style={{ width: '360px', height: '100%', borderLeft: '1px solid #e1e3e5', overflowY: 'auto' }}>
       <div style={{ padding: '16px' }}>
@@ -240,66 +297,136 @@ const PropertiesSidebar: React.FC = () => {
                         </Button>
                       </InlineStack>
                       
-                      {conditions.map((condition, index) => (
-                        <Card key={condition.id} padding="200">
-                          <BlockStack gap="200">
-                            {index > 0 && (
+                      {conditions.map((condition, index) => {
+                        const collections = getCollectionsForDataSource(condition.dataSource);
+                        const fields = condition.collection 
+                          ? getFieldsForCollection(condition.dataSource, condition.collection)
+                          : [];
+                        const selectedField = fields.find((f: DataSourceField) => f.key === condition.field);
+                        
+                        return (
+                          <Card key={condition.id} padding="200">
+                            <BlockStack gap="200">
+                              {index > 0 && (
+                                <Select
+                                  label="Logical Operator"
+                                  options={[
+                                    { label: 'AND', value: 'AND' },
+                                    { label: 'OR', value: 'OR' }
+                                  ]}
+                                  value={condition.logicalOperator || 'AND'}
+                                  onChange={(value) => updateCondition(condition.id, { 
+                                    logicalOperator: value as 'AND' | 'OR' 
+                                  })}
+                                />
+                              )}
+                              
                               <Select
-                                label="Operator"
-                                labelHidden
-                                options={[
-                                  { label: 'AND', value: 'AND' },
-                                  { label: 'OR', value: 'OR' }
-                                ]}
-                                value={condition.logicalOperator || 'AND'}
+                                label="Data Source"
+                                options={getDataSourcesForConditions()}
+                                value={condition.dataSource}
                                 onChange={(value) => updateCondition(condition.id, { 
-                                  logicalOperator: value as 'AND' | 'OR' 
+                                  dataSource: value as 'mongodb' | 'crm',
+                                  collection: undefined,
+                                  field: '',
+                                  value: ''
                                 })}
                               />
-                            )}
-                            <TextField
-                              label="Field"
-                              labelHidden
-                              placeholder="Field name"
-                              value={condition.field}
-                              onChange={(value) => updateCondition(condition.id, { field: value })}
-                              autoComplete="off"
-                            />
-                            <Select
-                              label="Operator"
-                              labelHidden
-                              options={[
-                                { label: 'Equals', value: 'equals' },
-                                { label: 'Not equals', value: 'not_equals' },
-                                { label: 'Contains', value: 'contains' },
-                                { label: 'Empty', value: 'empty' },
-                                { label: 'Not empty', value: 'not_empty' }
-                              ]}
-                              value={condition.operator}
-                              onChange={(value) => updateCondition(condition.id, { 
-                                operator: value as WorkflowCondition['operator'] 
-                              })}
-                            />
-                            {!['empty', 'not_empty'].includes(condition.operator) && (
-                              <TextField
-                                label="Value"
-                                labelHidden
-                                placeholder="Value"
-                                value={condition.value}
-                                onChange={(value) => updateCondition(condition.id, { value })}
-                                autoComplete="off"
-                              />
-                            )}
-                            <Button
-                              icon={Icons.Delete}
-                              onClick={() => removeCondition(condition.id)}
-                              variant="plain"
-                              tone="critical"
-                              size="slim"
-                            />
-                          </BlockStack>
-                        </Card>
-                      ))}
+                              
+                              {collections.length > 0 && (
+                                <Select
+                                  label="Collection"
+                                  options={collections.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))}
+                                  value={condition.collection || ''}
+                                  onChange={(value) => updateCondition(condition.id, { 
+                                    collection: value,
+                                    field: '',
+                                    value: ''
+                                  })}
+                                  placeholder="Select collection"
+                                />
+                              )}
+                              
+                              {fields.length > 0 && (
+                                <Select
+                                  label="Field"
+                                  options={fields.map((f: DataSourceField) => ({ label: f.label, value: f.key }))}
+                                  value={condition.field}
+                                  onChange={(value) => {
+                                    const field = fields.find((f: DataSourceField) => f.key === value);
+                                    updateCondition(condition.id, { 
+                                      field: value,
+                                      fieldType: field?.type || 'text',
+                                      selectOptions: field?.options,
+                                      value: ''
+                                    });
+                                  }}
+                                  placeholder="Select field"
+                                />
+                              )}
+                              
+                              {condition.field && (
+                                <Select
+                                  label="Operator"
+                                  options={getOperatorOptions(selectedField?.type)}
+                                  value={condition.operator}
+                                  onChange={(value) => updateCondition(condition.id, { 
+                                    operator: value as WorkflowCondition['operator']
+                                  })}
+                                />
+                              )}
+                              
+                              {condition.field && !['is_empty', 'is_not_empty'].includes(condition.operator) && (
+                                <>
+                                  {selectedField?.type === 'select' && selectedField.options ? (
+                                    <Select
+                                      label="Value"
+                                      options={selectedField.options.map((opt: string) => ({ label: opt, value: opt }))}
+                                      value={String(condition.value)}
+                                      onChange={(value) => updateCondition(condition.id, { value })}
+                                      placeholder="Select value"
+                                    />
+                                  ) : selectedField?.type === 'date' ? (
+                                    <TextField
+                                      label="Value"
+                                      type="date"
+                                      value={String(condition.value)}
+                                      onChange={(value) => updateCondition(condition.id, { value })}
+                                      autoComplete="off"
+                                    />
+                                  ) : selectedField?.type === 'number' ? (
+                                    <TextField
+                                      label="Value"
+                                      type="number"
+                                      value={String(condition.value)}
+                                      onChange={(value) => updateCondition(condition.id, { value: Number(value) })}
+                                      autoComplete="off"
+                                    />
+                                  ) : (
+                                    <TextField
+                                      label="Value"
+                                      value={String(condition.value)}
+                                      onChange={(value) => updateCondition(condition.id, { value })}
+                                      autoComplete="off"
+                                      placeholder="Enter value"
+                                    />
+                                  )}
+                                </>
+                              )}
+                              
+                              <Button
+                                icon={Icons.Delete}
+                                onClick={() => removeCondition(condition.id)}
+                                variant="plain"
+                                tone="critical"
+                                size="slim"
+                              >
+                                Remove condition
+                              </Button>
+                            </BlockStack>
+                          </Card>
+                        );
+                      })}
                     </BlockStack>
                   </>
                 )}

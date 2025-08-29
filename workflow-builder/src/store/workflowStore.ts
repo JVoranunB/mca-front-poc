@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { Connection, NodeChange, EdgeChange } from '@xyflow/react';
-import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError } from '../types/workflow.types';
+import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, TriggerConfig } from '../types/workflow.types';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -231,6 +231,90 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
       });
     }
     
+    // Validate trigger configurations
+    triggerNodes.forEach((node) => {
+      const config = node.data.config as TriggerConfig;
+      
+      if (!config) {
+        errors.push({
+          nodeId: node.id,
+          message: `Trigger node "${node.data.label}" is missing configuration`,
+          severity: 'error'
+        });
+        return;
+      }
+      
+      if (!config.triggerCategory) {
+        errors.push({
+          nodeId: node.id,
+          message: `Trigger node "${node.data.label}" must specify a trigger category`,
+          severity: 'error'
+        });
+      }
+      
+      if (!config.dataSource) {
+        errors.push({
+          nodeId: node.id,
+          message: `Trigger node "${node.data.label}" must specify a data source`,
+          severity: 'error'
+        });
+      }
+      
+      // Event-based trigger validation
+      if (config.triggerCategory === 'event-based') {
+        if (config.dataSource === 'mongodb' && (!config.collections || config.collections.length === 0)) {
+          errors.push({
+            nodeId: node.id,
+            message: `Event-based trigger "${node.data.label}" must specify collections to monitor`,
+            severity: 'error'
+          });
+        }
+      }
+      
+      // Scheduled trigger validation
+      if (config.triggerCategory === 'scheduled') {
+        if (!config.scheduleTime) {
+          errors.push({
+            nodeId: node.id,
+            message: `Scheduled trigger "${node.data.label}" must specify a schedule time`,
+            severity: 'error'
+          });
+        }
+        
+        if (config.scheduleType === 'one-time' && !config.scheduleDate) {
+          errors.push({
+            nodeId: node.id,
+            message: `One-time scheduled trigger "${node.data.label}" must specify a schedule date`,
+            severity: 'error'
+          });
+        }
+        
+        if (config.scheduleType === 'recurring' && !config.recurrencePattern) {
+          errors.push({
+            nodeId: node.id,
+            message: `Recurring scheduled trigger "${node.data.label}" must specify a recurrence pattern`,
+            severity: 'error'
+          });
+        }
+        
+        if (config.recurrencePattern === 'weekly' && config.dayOfWeek === undefined) {
+          errors.push({
+            nodeId: node.id,
+            message: `Weekly scheduled trigger "${node.data.label}" must specify day of week`,
+            severity: 'error'
+          });
+        }
+        
+        if (config.recurrencePattern === 'monthly' && !config.dayOfMonth) {
+          errors.push({
+            nodeId: node.id,
+            message: `Monthly scheduled trigger "${node.data.label}" must specify day of month`,
+            severity: 'error'
+          });
+        }
+      }
+    });
+    
     nodes.forEach((node) => {
       const hasIncoming = edges.some((e) => e.target === node.id);
       
@@ -242,6 +326,7 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
         });
       }
       
+      // Condition node validation
       if (node.data.type === 'condition') {
         const thenEdge = edges.find((e) => e.source === node.id && e.sourceHandle === 'then');
         const otherwiseEdge = edges.find((e) => e.source === node.id && e.sourceHandle === 'otherwise');
@@ -253,6 +338,43 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
             severity: 'error'
           });
         }
+        
+        // Validate conditions
+        const conditions = node.data.conditions || [];
+        if (conditions.length === 0) {
+          errors.push({
+            nodeId: node.id,
+            message: `Condition node "${node.data.label}" must have at least one condition`,
+            severity: 'error'
+          });
+        }
+        
+        conditions.forEach((condition, index) => {
+          if (!condition.dataSource) {
+            errors.push({
+              nodeId: node.id,
+              message: `Condition ${index + 1} in "${node.data.label}" must specify a data source`,
+              severity: 'error'
+            });
+          }
+          
+          if (!condition.field) {
+            errors.push({
+              nodeId: node.id,
+              message: `Condition ${index + 1} in "${node.data.label}" must specify a field`,
+              severity: 'error'
+            });
+          }
+          
+          if (!['is_empty', 'is_not_empty'].includes(condition.operator) && 
+              (condition.value === undefined || condition.value === '')) {
+            errors.push({
+              nodeId: node.id,
+              message: `Condition ${index + 1} in "${node.data.label}" must specify a value for operator "${condition.operator}"`,
+              severity: 'error'
+            });
+          }
+        });
       }
     });
     

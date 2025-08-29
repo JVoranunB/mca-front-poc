@@ -2,10 +2,33 @@ export type NodeType = 'trigger' | 'condition' | 'action' | 'step';
 
 export interface WorkflowCondition {
   id: string;
+  dataSource: 'mongodb' | 'crm';
+  collection?: string;
   field: string;
-  operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'empty' | 'not_empty' | 'greater_than' | 'less_than';
-  value: string;
+  fieldType: 'text' | 'number' | 'date' | 'select';
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'greater_equal' | 'less_equal' | 'contains' | 'not_contains' | 'date_before' | 'date_after' | 'is_empty' | 'is_not_empty';
+  value: string | number;
+  selectOptions?: string[];
   logicalOperator?: 'AND' | 'OR';
+}
+
+export interface TriggerConfig {
+  triggerCategory: 'event-based' | 'scheduled';
+  dataSource: 'mongodb' | 'crm';
+  merchantId?: string;
+  
+  // Event-based specific
+  changeStreamEnabled?: boolean;
+  collections?: string[];
+  
+  // Scheduled specific
+  scheduleTime?: string;
+  timezone?: string;
+  recurrencePattern?: 'one-time' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+  scheduleDate?: string; // for one-time schedules
+  scheduleType?: 'one-time' | 'recurring';
+  dayOfWeek?: number; // 0-6 for weekly
+  dayOfMonth?: number; // 1-31 for monthly
 }
 
 export interface NodeData {
@@ -14,7 +37,7 @@ export interface NodeData {
   description?: string;
   icon?: string;
   status?: 'active' | 'review' | 'error' | 'disabled';
-  config?: {
+  config?: TriggerConfig | {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   };
