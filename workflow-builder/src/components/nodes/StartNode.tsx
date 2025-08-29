@@ -47,12 +47,12 @@ const StartNode = memo(({ data }: NodeProps) => {
         </BlockStack>
       </Card>
       
-      {/* Output handle at bottom */}
+      {/* Output handle on the right */}
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         style={{
-          bottom: -5
+          right: -5
         }}
       />
     </div>
