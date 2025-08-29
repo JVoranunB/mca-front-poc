@@ -1,5 +1,7 @@
 export type NodeType = 'trigger' | 'condition' | 'action' | 'step';
 
+export type TriggerType = 'event-based' | 'schedule-based';
+
 export interface WorkflowCondition {
   id: string;
   dataSource: 'mongodb' | 'crm';
@@ -68,11 +70,23 @@ export interface Workflow {
   id: string;
   name: string;
   description?: string;
+  triggerType: TriggerType;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
   createdAt: string;
   updatedAt: string;
   status: 'draft' | 'active' | 'paused';
+  lastTriggered?: string;
+}
+
+export interface WorkflowSummary {
+  id: string;
+  name: string;
+  triggerType: TriggerType;
+  status: 'draft' | 'active' | 'paused';
+  nodeCount: number;
+  lastModified: string;
+  lastTriggered?: string;
 }
 
 export interface NodeTemplate {

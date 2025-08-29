@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, Text, BlockStack, InlineStack, Icon, Tabs } from '@shopify/polaris';
 import { Icons } from '../utils/icons';
-import { nodeTemplates } from '../data/nodeTemplates';
+import { getTemplatesByTriggerType } from '../data/nodeTemplates';
+import useWorkflowStore from '../store/workflowStore';
 import type { NodeTemplate } from '../types/workflow.types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,6 +11,11 @@ const iconMap: Record<string, any> = {
   OrderIcon: Icons.Default,
   CustomerIcon: Icons.Default,
   ProductIcon: Icons.Default,
+  CartIcon: Icons.Default,
+  PaymentIcon: Icons.Default,
+  MobileIcon: Icons.Default,
+  EmailIcon: Icons.Default,
+  GiftIcon: Icons.Default,
   HelpIcon: Icons.Question,
   PlusMinorIcon: Icons.Add,
   ExportIcon: Icons.Default,
@@ -45,12 +51,16 @@ interface NodeSidebarProps {
 
 const NodeSidebar: React.FC<NodeSidebarProps> = ({ onDragStart }) => {
   const [selectedTab, setSelectedTab] = React.useState(0);
+  const { currentWorkflow } = useWorkflowStore();
+  
+  // Get templates based on current workflow's trigger type
+  const availableTemplates = getTemplatesByTriggerType(currentWorkflow?.triggerType);
   
   const categories = [
-    { id: 'triggers', label: 'Triggers', nodes: nodeTemplates.filter(n => n.category === 'triggers') },
-    { id: 'conditions', label: 'Conditions', nodes: nodeTemplates.filter(n => n.category === 'conditions') },
-    { id: 'actions', label: 'Actions', nodes: nodeTemplates.filter(n => n.category === 'actions') },
-    { id: 'utilities', label: 'Utilities', nodes: nodeTemplates.filter(n => n.category === 'utilities') }
+    { id: 'triggers', label: 'Triggers', nodes: availableTemplates.filter(n => n.category === 'triggers') },
+    { id: 'conditions', label: 'Conditions', nodes: availableTemplates.filter(n => n.category === 'conditions') },
+    { id: 'actions', label: 'Actions', nodes: availableTemplates.filter(n => n.category === 'actions') },
+    { id: 'utilities', label: 'Utilities', nodes: availableTemplates.filter(n => n.category === 'utilities') }
   ];
   
   const tabs = categories.map((category) => ({

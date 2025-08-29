@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { Connection, NodeChange, EdgeChange } from '@xyflow/react';
-import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, TriggerConfig } from '../types/workflow.types';
+import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, TriggerConfig, WorkflowSummary, TriggerType } from '../types/workflow.types';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -32,6 +32,12 @@ interface WorkflowState {
   loadWorkflow: (workflowId: string) => void;
   clearWorkflow: () => void;
   deleteWorkflow: (workflowId: string) => void;
+  
+  getAllWorkflows: () => WorkflowSummary[];
+  createWorkflowFromType: (triggerType: TriggerType) => string;
+  duplicateWorkflow: (id: string) => string;
+  toggleWorkflowStatus: (id: string) => void;
+  getWorkflowSummary: (workflow: Workflow) => WorkflowSummary;
   
   validateWorkflow: () => boolean;
   setValidationErrors: (errors: ValidationError[]) => void;
@@ -159,18 +165,38 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
   
   saveWorkflow: (name, description) => {
+    const currentState = get();
+    
+    // Determine trigger type from nodes if not already set
+    let triggerType: TriggerType = 'event-based';
+    const triggerNode = currentState.nodes.find(n => n.data.type === 'trigger');
+    if (triggerNode?.data.config) {
+      const config = triggerNode.data.config as TriggerConfig;
+      triggerType = config.triggerCategory === 'scheduled' ? 'schedule-based' : 'event-based';
+    }
+    
     const workflow: Workflow = {
-      id: Date.now().toString(),
+      id: currentState.currentWorkflow?.id || Date.now().toString(),
       name,
       description: description || '',
-      nodes: get().nodes,
-      edges: get().edges,
-      createdAt: new Date().toISOString(),
+      triggerType,
+      nodes: currentState.nodes,
+      edges: currentState.edges,
+      createdAt: currentState.currentWorkflow?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      status: 'draft'
+      status: currentState.currentWorkflow?.status || 'draft'
     };
     
-    const workflows = [...get().workflows, workflow];
+    const existingIndex = currentState.workflows.findIndex(w => w.id === workflow.id);
+    let workflows;
+    
+    if (existingIndex >= 0) {
+      workflows = [...currentState.workflows];
+      workflows[existingIndex] = workflow;
+    } else {
+      workflows = [...currentState.workflows, workflow];
+    }
+    
     localStorage.setItem('workflows', JSON.stringify(workflows));
     
     set({
@@ -388,6 +414,95 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   
   setDirty: (isDirty) => {
     set({ isDirty });
+  },
+  
+  getAllWorkflows: () => {
+    return get().workflows.map(workflow => get().getWorkflowSummary(workflow));
+  },
+  
+  createWorkflowFromType: (triggerType: TriggerType) => {
+    const now = new Date().toISOString();
+    const workflow: Workflow = {
+      id: Date.now().toString(),
+      name: `New ${triggerType === 'event-based' ? 'Event-Based' : 'Schedule-Based'} Workflow`,
+      description: '',
+      triggerType,
+      nodes: [],
+      edges: [],
+      createdAt: now,
+      updatedAt: now,
+      status: 'draft'
+    };
+    
+    const workflows = [...get().workflows, workflow];
+    localStorage.setItem('workflows', JSON.stringify(workflows));
+    
+    set({
+      workflows,
+      currentWorkflow: workflow,
+      nodes: [],
+      edges: [],
+      selectedNode: null,
+      selectedEdge: null,
+      validationErrors: [],
+      isDirty: false
+    });
+    
+    return workflow.id;
+  },
+  
+  duplicateWorkflow: (id: string) => {
+    const originalWorkflow = get().workflows.find(w => w.id === id);
+    if (!originalWorkflow) return '';
+    
+    const now = new Date().toISOString();
+    const duplicatedWorkflow: Workflow = {
+      ...originalWorkflow,
+      id: Date.now().toString(),
+      name: `${originalWorkflow.name} (Copy)`,
+      createdAt: now,
+      updatedAt: now,
+      status: 'draft',
+      lastTriggered: undefined
+    };
+    
+    const workflows = [...get().workflows, duplicatedWorkflow];
+    localStorage.setItem('workflows', JSON.stringify(workflows));
+    
+    set({ workflows });
+    
+    return duplicatedWorkflow.id;
+  },
+  
+  toggleWorkflowStatus: (id: string) => {
+    const workflows = get().workflows.map(workflow => {
+      if (workflow.id === id) {
+        const newStatus = workflow.status === 'active' ? 'paused' : 
+                         workflow.status === 'paused' ? 'active' : 'active';
+        return {
+          ...workflow,
+          status: newStatus as 'draft' | 'active' | 'paused',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return workflow;
+    });
+    
+    localStorage.setItem('workflows', JSON.stringify(workflows));
+    
+    set({ workflows });
+  },
+  
+  getWorkflowSummary: (workflow: Workflow): WorkflowSummary => {
+    return {
+      id: workflow.id,
+      name: workflow.name,
+      triggerType: workflow.triggerType,
+      status: workflow.status,
+      nodeCount: workflow.nodes.length,
+      lastModified: workflow.updatedAt,
+      lastTriggered: workflow.lastTriggered
+    };
   }
 }));
 

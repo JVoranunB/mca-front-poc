@@ -15,11 +15,16 @@ import {
   SaveIcon,
   FolderIcon,
   CheckCircleIcon,
-  DeleteIcon
+  DeleteIcon,
+  ChevronLeftIcon
 } from '@shopify/polaris-icons';
 import useWorkflowStore from '../store/workflowStore';
 
-const TopBar: React.FC = () => {
+interface TopBarProps {
+  onBackToList?: () => void;
+}
+
+const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
   const [workflowName, setWorkflowName] = useState('');
@@ -110,6 +115,14 @@ const TopBar: React.FC = () => {
       }}>
         <InlineStack align="space-between" blockAlign="center">
           <InlineStack gap="400" blockAlign="center">
+            {onBackToList && (
+              <Button
+                icon={ChevronLeftIcon}
+                onClick={onBackToList}
+                variant="plain"
+                accessibilityLabel="Back to workflow list"
+              />
+            )}
             <Text as="h1" variant="headingXl">
               Workflow Builder
             </Text>

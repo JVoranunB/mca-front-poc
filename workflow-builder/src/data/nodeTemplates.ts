@@ -1,12 +1,12 @@
-import type { NodeTemplate } from '../types/workflow.types';
+import type { NodeTemplate, TriggerType } from '../types/workflow.types';
 
-export const nodeTemplates: NodeTemplate[] = [
-  // Triggers - Flexible Event-Based and Scheduled
+// Event-based trigger templates
+export const eventBasedTriggerTemplates: NodeTemplate[] = [
   {
     type: 'trigger',
-    label: 'Event-based trigger',
-    description: 'Triggers when data changes occur in real-time (MongoDB change streams)',
-    icon: 'PlayIcon',
+    label: 'Order created',
+    description: 'Triggers when a new order is placed',
+    icon: 'CartIcon',
     category: 'triggers',
     defaultConfig: {
       triggerCategory: 'event-based',
@@ -18,9 +18,55 @@ export const nodeTemplates: NodeTemplate[] = [
   },
   {
     type: 'trigger',
-    label: 'Scheduled trigger',
-    description: 'Triggers based on date/time schedules with timezone support',
-    icon: 'ClockIcon',
+    label: 'Customer signed up',
+    description: 'Triggers when a new customer registers',
+    icon: 'CustomerIcon',
+    category: 'triggers',
+    defaultConfig: {
+      triggerCategory: 'event-based',
+      dataSource: 'mongodb',
+      changeStreamEnabled: true,
+      collections: ['customers'],
+      merchantId: ''
+    }
+  },
+  {
+    type: 'trigger',
+    label: 'Product updated',
+    description: 'Triggers when product information changes',
+    icon: 'ProductIcon',
+    category: 'triggers',
+    defaultConfig: {
+      triggerCategory: 'event-based',
+      dataSource: 'mongodb',
+      changeStreamEnabled: true,
+      collections: ['products'],
+      merchantId: ''
+    }
+  },
+  {
+    type: 'trigger',
+    label: 'Payment received',
+    description: 'Triggers when payment is processed successfully',
+    icon: 'PaymentIcon',
+    category: 'triggers',
+    defaultConfig: {
+      triggerCategory: 'event-based',
+      dataSource: 'mongodb',
+      changeStreamEnabled: true,
+      collections: ['payments'],
+      merchantId: ''
+    }
+  }
+];
+
+// Schedule-based trigger templates
+export const scheduleBasedTriggerTemplates: NodeTemplate[] = [
+  {
+    type: 'trigger',
+    label: 'Daily report',
+    description: 'Runs daily at specified time',
+    icon: 'CalendarIcon',
     category: 'triggers',
     defaultConfig: {
       triggerCategory: 'scheduled',
@@ -32,7 +78,60 @@ export const nodeTemplates: NodeTemplate[] = [
       merchantId: ''
     }
   },
-  
+  {
+    type: 'trigger',
+    label: 'Weekly summary',
+    description: 'Runs weekly on specified day and time',
+    icon: 'CalendarIcon',
+    category: 'triggers',
+    defaultConfig: {
+      triggerCategory: 'scheduled',
+      dataSource: 'crm',
+      scheduleType: 'recurring',
+      recurrencePattern: 'weekly',
+      scheduleTime: '10:00',
+      dayOfWeek: 1, // Monday
+      timezone: 'UTC',
+      merchantId: ''
+    }
+  },
+  {
+    type: 'trigger',
+    label: 'Monthly report',
+    description: 'Runs monthly on specified day and time',
+    icon: 'CalendarIcon',
+    category: 'triggers',
+    defaultConfig: {
+      triggerCategory: 'scheduled',
+      dataSource: 'crm',
+      scheduleType: 'recurring',
+      recurrencePattern: 'monthly',
+      scheduleTime: '09:00',
+      dayOfMonth: 1,
+      timezone: 'UTC',
+      merchantId: ''
+    }
+  },
+  {
+    type: 'trigger',
+    label: 'One-time scheduled',
+    description: 'Runs once at specified date and time',
+    icon: 'ClockIcon',
+    category: 'triggers',
+    defaultConfig: {
+      triggerCategory: 'scheduled',
+      dataSource: 'crm',
+      scheduleType: 'one-time',
+      scheduleDate: '',
+      scheduleTime: '12:00',
+      timezone: 'UTC',
+      merchantId: ''
+    }
+  }
+];
+
+// Common node templates (shared across trigger types)
+export const commonNodeTemplates: NodeTemplate[] = [
   // Conditions
   {
     type: 'condition',
@@ -172,4 +271,22 @@ export const nodeTemplates: NodeTemplate[] = [
       level: 'info'
     }
   }
+];
+
+// Helper function to get templates by trigger type
+export const getTemplatesByTriggerType = (triggerType?: TriggerType): NodeTemplate[] => {
+  const triggerTemplates = triggerType === 'event-based' 
+    ? eventBasedTriggerTemplates 
+    : triggerType === 'schedule-based'
+    ? scheduleBasedTriggerTemplates
+    : [...eventBasedTriggerTemplates, ...scheduleBasedTriggerTemplates];
+  
+  return [...triggerTemplates, ...commonNodeTemplates];
+};
+
+// Backward compatibility - export all templates
+export const nodeTemplates: NodeTemplate[] = [
+  ...eventBasedTriggerTemplates,
+  ...scheduleBasedTriggerTemplates,
+  ...commonNodeTemplates
 ];
