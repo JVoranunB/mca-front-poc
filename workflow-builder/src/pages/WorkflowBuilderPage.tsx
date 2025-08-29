@@ -125,22 +125,24 @@ const WorkflowBuilderPage = () => {
   
   return (
     <AppProvider i18n={{}}>
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <TopBar onBackToList={handleBackToList} />
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <NodeSidebar onDragStart={onDragStart} />
-          <div ref={reactFlowWrapper} style={{ flex: 1 }}>
-            <ReactFlowProvider>
-              <WorkflowCanvas
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-                setReactFlowInstance={setReactFlowInstance}
-              />
-            </ReactFlowProvider>
+      <Frame>
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <TopBar onBackToList={handleBackToList} />
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            <NodeSidebar onDragStart={onDragStart} />
+            <div ref={reactFlowWrapper} style={{ flex: 1 }}>
+              <ReactFlowProvider>
+                <WorkflowCanvas
+                  onDrop={onDrop}
+                  onDragOver={onDragOver}
+                  setReactFlowInstance={setReactFlowInstance}
+                />
+              </ReactFlowProvider>
+            </div>
+            <PropertiesSidebar />
           </div>
-          <PropertiesSidebar />
         </div>
-      </div>
+      </Frame>
     </AppProvider>
   );
 };

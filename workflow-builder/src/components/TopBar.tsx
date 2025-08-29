@@ -7,7 +7,6 @@ import {
   Select,
   FormLayout,
   Toast,
-  Frame,
   Badge,
   InlineStack,
   Icon
@@ -347,13 +346,11 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
       </Modal>
       
       {showToast && (
-        <Frame>
-          <Toast
-            content={toastMessage}
-            onDismiss={() => setShowToast(false)}
-            error={toastError}
-          />
-        </Frame>
+        <Toast
+          content={toastMessage}
+          onDismiss={() => setShowToast(false)}
+          error={toastError}
+        />
       )}
     </>
   );
