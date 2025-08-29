@@ -172,20 +172,69 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
   // Handle connection line style during drag
   const connectionLineStyle = {
     stroke: '#5C6AC4',
-    strokeWidth: 2,
+    strokeWidth: 3,
+    strokeDasharray: '8,5',
   };
 
-  // Custom connection line component for visual feedback
+  // Custom connection line component for enhanced visual feedback
   const connectionLineComponent = useCallback((props: any) => {
+    const { fromX, fromY, toX, toY, connectionStatus } = props;
+    
+    // Calculate bezier curve path for smoother connection line
+    const midX = fromX + (toX - fromX) / 2;
+    const path = `M ${fromX} ${fromY} C ${midX} ${fromY} ${midX} ${toY} ${toX} ${toY}`;
+    
+    // Determine line color based on connection validity
+    const lineColor = connectionStatus === 'valid' ? '#00848E' : '#5C6AC4';
+    const shadowColor = connectionStatus === 'valid' ? '#00A0B0' : '#7B83D3';
+    
     return (
       <g>
+        {/* Drop shadow for depth */}
         <path
           fill="none"
-          stroke={props.connectionLineStyle?.stroke || '#5C6AC4'}
-          strokeWidth={props.connectionLineStyle?.strokeWidth || 2}
-          className="animated"
-          d={props.connectionPath}
+          stroke={shadowColor}
+          strokeWidth={4}
+          strokeDasharray="8,5"
+          strokeOpacity={0.3}
+          d={path}
+          transform="translate(2,2)"
+        />
+        {/* Main connection line */}
+        <path
+          fill="none"
+          stroke={lineColor}
+          strokeWidth={3}
+          strokeDasharray="8,5"
+          strokeOpacity={0.8}
+          d={path}
           markerEnd="url(#react-flow__arrowclosed)"
+          style={{
+            animation: 'dashMove 1s linear infinite'
+          }}
+        />
+        {/* Connection point indicators */}
+        <circle
+          cx={fromX}
+          cy={fromY}
+          r={4}
+          fill={lineColor}
+          stroke="#fff"
+          strokeWidth={2}
+          opacity={0.9}
+        />
+        <circle
+          cx={toX}
+          cy={toY}
+          r={6}
+          fill="transparent"
+          stroke={lineColor}
+          strokeWidth={2}
+          strokeDasharray="3,3"
+          opacity={0.7}
+          style={{
+            animation: 'pulse 1s ease-in-out infinite'
+          }}
         />
       </g>
     );

@@ -34,6 +34,27 @@
   }
 }
 
+/* Connection line preview animations */
+@keyframes dashMove {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -13;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
 .react-flow__edge-text {
   font-size: 12px;
   font-weight: 500;
