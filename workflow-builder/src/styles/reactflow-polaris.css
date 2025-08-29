@@ -35,8 +35,20 @@
 .react-flow__handle {
   background: #5C6AC4;
   border: 2px solid #fff;
-  width: 10px;
-  height: 10px;
+  width: 16px;
+  height: 16px;
+  cursor: crosshair;
+  z-index: 10;
+}
+
+.react-flow__handle:hover:not(.react-flow__handle-connecting) {
+  transform: scale(1.2);
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+
+.react-flow__handle-connecting {
+  transform: none !important;
 }
 
 .react-flow__handle-connecting {

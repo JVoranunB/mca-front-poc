@@ -14,10 +14,12 @@ const StepNode = memo(({ data }: NodeProps) => {
         position={Position.Left}
         style={{
           background: '#6C71C5',
-          width: 10,
-          height: 10,
+          width: 16,
+          height: 16,
           border: '2px solid #fff',
-          left: -5
+          left: -8,
+          transform: 'translate(0, -50%)',
+          top: '50%'
         }}
       />
       
@@ -57,10 +59,12 @@ const StepNode = memo(({ data }: NodeProps) => {
         position={Position.Right}
         style={{
           background: '#6C71C5',
-          width: 10,
-          height: 10,
+          width: 16,
+          height: 16,
           border: '2px solid #fff',
-          right: -5
+          right: -8,
+          transform: 'translate(0, -50%)',
+          top: '50%'
         }}
       />
     </div>

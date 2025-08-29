@@ -53,7 +53,13 @@ const StartNode = memo(({ data }: NodeProps) => {
         type="source"
         position={Position.Right}
         style={{
-          right: -5
+          right: -8,
+          width: 16,
+          height: 16,
+          background: '#8B5A99',
+          border: '2px solid #fff',
+          transform: 'translate(0, -50%)',
+          top: '50%'
         }}
       />
     </div>

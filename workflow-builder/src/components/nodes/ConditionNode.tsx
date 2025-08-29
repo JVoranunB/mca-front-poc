@@ -15,10 +15,12 @@ const ConditionNode = memo(({ data }: NodeProps) => {
         position={Position.Left}
         style={{
           background: '#95A99C',
-          width: 10,
-          height: 10,
+          width: 16,
+          height: 16,
           border: '2px solid #fff',
-          left: -5
+          left: -8,
+          transform: 'translate(0, -50%)',
+          top: '50%'
         }}
       />
       
@@ -116,21 +118,26 @@ const ConditionNode = memo(({ data }: NodeProps) => {
         position={Position.Right}
         style={{
           background: '#50B83C',
-          width: 10,
-          height: 10,
+          width: 16,
+          height: 16,
           border: '2px solid #fff',
-          right: -5,
-          top: '30%'
+          right: -8,
+          top: '30%',
+          transform: 'translate(0, -50%)'
         }}
       />
       <div style={{
         position: 'absolute',
-        right: -35,
+        right: -55,
         top: '30%',
         transform: 'translateY(-50%)',
-        fontSize: '11px',
+        fontSize: '12px',
         color: '#50B83C',
-        fontWeight: 500
+        fontWeight: 600,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        padding: '2px 6px',
+        borderRadius: '4px',
+        border: '1px solid #50B83C'
       }}>
         Then
       </div>
@@ -141,21 +148,26 @@ const ConditionNode = memo(({ data }: NodeProps) => {
         position={Position.Right}
         style={{
           background: '#F49342',
-          width: 10,
-          height: 10,
+          width: 16,
+          height: 16,
           border: '2px solid #fff',
-          right: -5,
-          top: '70%'
+          right: -8,
+          top: '70%',
+          transform: 'translate(0, -50%)'
         }}
       />
       <div style={{
         position: 'absolute',
-        right: -55,
+        right: -85,
         top: '70%',
         transform: 'translateY(-50%)',
-        fontSize: '11px',
+        fontSize: '12px',
         color: '#F49342',
-        fontWeight: 500
+        fontWeight: 600,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        padding: '2px 6px',
+        borderRadius: '4px',
+        border: '1px solid #F49342'
       }}>
         Otherwise
       </div>
