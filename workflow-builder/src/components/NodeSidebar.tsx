@@ -1,6 +1,8 @@
 import React from 'react';
-import { Card, Text, BlockStack, InlineStack, Icon, Tabs } from '@shopify/polaris';
+import { Card, Text, BlockStack, InlineStack, Icon, Tabs, Button } from '@shopify/polaris';
+import { ChevronLeftIcon, ChevronRightIcon } from '@shopify/polaris-icons';
 import { Icons } from '../utils/icons';
+import useWorkflowStore from '../store/workflowStore';
 import { nodeTemplates } from '../data/nodeTemplates';
 import type { NodeTemplate } from '../types/workflow.types';
 
@@ -50,6 +52,7 @@ interface NodeSidebarProps {
 
 const NodeSidebar: React.FC<NodeSidebarProps> = ({ onDragStart }) => {
   const [selectedTab, setSelectedTab] = React.useState(0);
+  const { leftSidebarVisible, toggleLeftSidebar } = useWorkflowStore();
   
   // Get templates (start node is auto-created, so no triggers in sidebar)
   const availableTemplates = nodeTemplates;
@@ -70,12 +73,33 @@ const NodeSidebar: React.FC<NodeSidebarProps> = ({ onDragStart }) => {
   const currentCategory = categories[selectedTab];
   
   return (
-    <div style={{ width: '320px', height: '100%', borderRight: '1px solid #e1e3e5' }}>
-      <div style={{ padding: '16px', borderBottom: '1px solid #e1e3e5' }}>
-        <Text as="h2" variant="headingLg">
-          Workflow Nodes
-        </Text>
-      </div>
+    <div style={{ 
+      width: leftSidebarVisible ? '320px' : '48px', 
+      height: '100%', 
+      borderRight: '1px solid #e1e3e5',
+      transition: 'width 0.3s ease',
+      position: 'relative'
+    }}>
+      {leftSidebarVisible ? (
+        <>
+          <div style={{ 
+            padding: '16px', 
+            borderBottom: '1px solid #e1e3e5',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Text as="h2" variant="headingLg">
+              Workflow Nodes
+            </Text>
+            <Button
+              icon={ChevronLeftIcon}
+              variant="tertiary"
+              size="slim"
+              onClick={toggleLeftSidebar}
+              accessibilityLabel="Collapse sidebar"
+            />
+          </div>
       
       <Tabs tabs={tabs} selected={selectedTab} onSelect={setSelectedTab}>
         <div style={{ height: 'calc(100vh - 200px)', overflowY: 'auto', padding: '16px' }}>
@@ -117,6 +141,22 @@ const NodeSidebar: React.FC<NodeSidebarProps> = ({ onDragStart }) => {
           </BlockStack>
         </div>
       </Tabs>
+        </>
+      ) : (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: '16px'
+        }}>
+          <Button
+            icon={ChevronRightIcon}
+            variant="tertiary"
+            size="slim"
+            onClick={toggleLeftSidebar}
+            accessibilityLabel="Expand sidebar"
+          />
+        </div>
+      )}
     </div>
   );
 };

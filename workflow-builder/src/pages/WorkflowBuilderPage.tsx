@@ -20,7 +20,7 @@ const WorkflowBuilderPage = () => {
   const navigate = useNavigate();
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { addNode, loadWorkflow, createWorkflowFromType } = useWorkflowStore();
+  const { addNode, loadWorkflow, createWorkflowFromType, leftSidebarVisible, rightSidebarVisible } = useWorkflowStore();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -129,7 +129,7 @@ const WorkflowBuilderPage = () => {
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
           <TopBar onBackToList={handleBackToList} />
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-            <NodeSidebar onDragStart={onDragStart} />
+            {(leftSidebarVisible || !leftSidebarVisible) && <NodeSidebar onDragStart={onDragStart} />}
             <div ref={reactFlowWrapper} style={{ flex: 1 }}>
               <ReactFlowProvider>
                 <WorkflowCanvas
@@ -139,7 +139,7 @@ const WorkflowBuilderPage = () => {
                 />
               </ReactFlowProvider>
             </div>
-            <PropertiesSidebar />
+            {(rightSidebarVisible || !rightSidebarVisible) && <PropertiesSidebar />}
           </div>
         </div>
       </Frame>

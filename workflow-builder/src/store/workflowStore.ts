@@ -12,6 +12,8 @@ interface WorkflowState {
   currentWorkflow: Workflow | null;
   validationErrors: ValidationError[];
   isDirty: boolean;
+  leftSidebarVisible: boolean;
+  rightSidebarVisible: boolean;
   
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -44,6 +46,10 @@ interface WorkflowState {
   setValidationErrors: (errors: ValidationError[]) => void;
   
   setDirty: (isDirty: boolean) => void;
+  toggleLeftSidebar: () => void;
+  toggleRightSidebar: () => void;
+  setLeftSidebarVisible: (visible: boolean) => void;
+  setRightSidebarVisible: (visible: boolean) => void;
 }
 
 const useWorkflowStore = create<WorkflowState>((set, get) => ({
@@ -55,6 +61,8 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   currentWorkflow: null,
   validationErrors: [],
   isDirty: false,
+  leftSidebarVisible: true,
+  rightSidebarVisible: true,
   
   onNodesChange: (changes) => {
     set({
@@ -479,6 +487,22 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
       lastModified: workflow.updatedAt,
       lastTriggered: workflow.lastTriggered
     };
+  },
+  
+  toggleLeftSidebar: () => {
+    set((state) => ({ leftSidebarVisible: !state.leftSidebarVisible }));
+  },
+  
+  toggleRightSidebar: () => {
+    set((state) => ({ rightSidebarVisible: !state.rightSidebarVisible }));
+  },
+  
+  setLeftSidebarVisible: (visible) => {
+    set({ leftSidebarVisible: visible });
+  },
+  
+  setRightSidebarVisible: (visible) => {
+    set({ rightSidebarVisible: visible });
   }
 }));
 

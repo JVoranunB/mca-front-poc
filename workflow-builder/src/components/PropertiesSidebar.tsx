@@ -12,13 +12,14 @@ import {
   Divider,
   EmptyState
 } from '@shopify/polaris';
+import { ChevronLeftIcon, ChevronRightIcon } from '@shopify/polaris-icons';
 import { Icons } from '../utils/icons';
 import useWorkflowStore from '../store/workflowStore';
 import type { WorkflowCondition, StartConfig } from '../types/workflow.types';
 import { getDataSourcesForConditions, getCollectionsForDataSource, getFieldsForCollection, type DataSourceField } from '../utils/dataSourceFields';
 
 const PropertiesSidebar: React.FC = () => {
-  const { selectedNode, updateNode, deleteNode } = useWorkflowStore();
+  const { selectedNode, updateNode, deleteNode, rightSidebarVisible, toggleRightSidebar } = useWorkflowStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [localConfig, setLocalConfig] = useState<Record<string, any>>({});
   const [conditions, setConditions] = useState<WorkflowCondition[]>([]);
@@ -88,15 +89,53 @@ const PropertiesSidebar: React.FC = () => {
   
   if (!selectedNode) {
     return (
-      <div style={{ width: '360px', height: '100%', borderLeft: '1px solid #e1e3e5', padding: '16px' }}>
-        <Card>
-          <EmptyState
-            heading="No node selected"
-            image="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23DDD' d='M30 58C45.464 58 58 45.464 58 30S45.464 2 30 2 2 14.536 2 30s12.536 28 28 28z'/%3E%3Cpath fill='%23FFF' d='M30 54C43.255 54 54 43.255 54 30S43.255 6 30 6 6 16.745 6 30s10.745 24 24 24z'/%3E%3Cpath fill='%23DDD' d='M30 50C41.046 50 50 41.046 50 30S41.046 10 30 10 10 18.954 10 30s8.954 20 20 20z'/%3E%3Cpath fill='%23FFF' d='M24 26h12v8H24z'/%3E%3C/g%3E%3C/svg%3E"
-          >
-            <p>Select a node to view and edit its properties</p>
-          </EmptyState>
-        </Card>
+      <div style={{ 
+        width: rightSidebarVisible ? '360px' : '48px', 
+        height: '100%', 
+        borderLeft: '1px solid #e1e3e5',
+        transition: 'width 0.3s ease',
+        position: 'relative'
+      }}>
+        {rightSidebarVisible ? (
+          <div style={{ padding: '16px' }}>
+            <BlockStack gap="400">
+              <InlineStack align="space-between" blockAlign="center">
+                <Text as="h2" variant="headingLg">
+                  Properties
+                </Text>
+                <Button
+                  icon={ChevronRightIcon}
+                  variant="tertiary"
+                  size="slim"
+                  onClick={toggleRightSidebar}
+                  accessibilityLabel="Collapse sidebar"
+                />
+              </InlineStack>
+              <Card>
+                <EmptyState
+                  heading="No node selected"
+                  image="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23DDD' d='M30 58C45.464 58 58 45.464 58 30S45.464 2 30 2 2 14.536 2 30s12.536 28 28 28z'/%3E%3Cpath fill='%23FFF' d='M30 54C43.255 54 54 43.255 54 30S43.255 6 30 6 6 16.745 6 30s10.745 24 24 24z'/%3E%3Cpath fill='%23DDD' d='M30 50C41.046 50 50 41.046 50 30S41.046 10 30 10 10 18.954 10 30s8.954 20 20 20z'/%3E%3Cpath fill='%23FFF' d='M24 26h12v8H24z'/%3E%3C/g%3E%3C/svg%3E"
+                >
+                  <p>Select a node to view and edit its properties</p>
+                </EmptyState>
+              </Card>
+            </BlockStack>
+          </div>
+        ) : (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            paddingTop: '16px'
+          }}>
+            <Button
+              icon={ChevronLeftIcon}
+              variant="tertiary"
+              size="slim"
+              onClick={toggleRightSidebar}
+              accessibilityLabel="Expand sidebar"
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -116,7 +155,7 @@ const PropertiesSidebar: React.FC = () => {
           <Select
             label="Data Source"
             options={[
-              { label: 'CRM System', value: 'CRM' }
+              { label: 'CRM', value: 'CRM' }
             ]}
             value={config.dataSource || 'CRM'}
             onChange={(value) => handleConfigChange('dataSource', value)}
@@ -246,15 +285,32 @@ const PropertiesSidebar: React.FC = () => {
   };
   
   return (
-    <div style={{ width: '360px', height: '100%', borderLeft: '1px solid #e1e3e5', overflowY: 'auto' }}>
-      <div style={{ padding: '16px' }}>
-        <BlockStack gap="400">
-          <InlineStack align="space-between" blockAlign="center">
-            <Text as="h2" variant="headingLg">
-              Properties
-            </Text>
-            <Badge tone="info">{selectedNode.data.type}</Badge>
-          </InlineStack>
+    <div style={{ 
+      width: rightSidebarVisible ? '360px' : '48px', 
+      height: '100%', 
+      borderLeft: '1px solid #e1e3e5', 
+      overflowY: rightSidebarVisible ? 'auto' : 'hidden',
+      transition: 'width 0.3s ease',
+      position: 'relative'
+    }}>
+      {rightSidebarVisible ? (
+        <div style={{ padding: '16px' }}>
+          <BlockStack gap="400">
+            <InlineStack align="space-between" blockAlign="center">
+              <InlineStack gap="200" blockAlign="center">
+                <Text as="h2" variant="headingLg">
+                  Properties
+                </Text>
+                <Badge tone="info">{selectedNode.data.type}</Badge>
+              </InlineStack>
+              <Button
+                icon={ChevronRightIcon}
+                variant="tertiary"
+                size="slim"
+                onClick={toggleRightSidebar}
+                accessibilityLabel="Collapse sidebar"
+              />
+            </InlineStack>
           
           <Card>
             <BlockStack gap="400">
@@ -443,6 +499,21 @@ const PropertiesSidebar: React.FC = () => {
           </Card>
         </BlockStack>
       </div>
+      ) : (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: '16px'
+        }}>
+          <Button
+            icon={ChevronLeftIcon}
+            variant="tertiary"
+            size="slim"
+            onClick={toggleRightSidebar}
+            accessibilityLabel="Expand sidebar"
+          />
+        </div>
+      )}
     </div>
   );
 };

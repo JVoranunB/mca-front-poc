@@ -124,7 +124,7 @@ export const getOperatorsForFieldType = (fieldType: 'text' | 'number' | 'date' |
 };
 
 export const getDataSourcesForConditions = () => [
-  { label: 'CRM System', value: 'CRM' }
+  { label: 'CRM', value: 'CRM' }
 ];
 
 export const getFieldsForCollection = (dataSource: 'CRM', collection: string): DataSourceField[] => {
