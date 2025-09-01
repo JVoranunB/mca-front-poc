@@ -164,91 +164,14 @@ const PropertiesSidebar: React.FC = () => {
           />
           
           
-          {/* Schedule Configuration - only show for schedule-based workflows */}
+          {/* Schedule Configuration - show for schedule-based workflows or when explicitly set */}
           {(config.triggerCategory === 'scheduled' || 
-            (selectedNode.data.label.includes('Daily') || 
-             selectedNode.data.label.includes('Weekly') || 
-             selectedNode.data.label.includes('Schedule'))) && (
-            <>
-              <FormLayout.Group>
-                <Text as="h3" variant="headingMd">Schedule Configuration</Text>
-              </FormLayout.Group>
-              
-              <Select
-                label="Schedule Type"
-                options={[
-                  { label: 'One-time', value: 'one-time' },
-                  { label: 'Recurring', value: 'recurring' }
-                ]}
-                value={config.scheduleType || 'recurring'}
-                onChange={(value) => handleConfigChange('scheduleType', value)}
-              />
-              
-              <TextField
-                label="Schedule Time"
-                value={String(config.scheduleTime || '')}
-                onChange={(value) => handleConfigChange('scheduleTime', value)}
-                autoComplete="off"
-                placeholder="14:00"
-                helpText="Time in 24-hour format (e.g., 14:00 for 2 PM)"
-              />
-              
-              {config.scheduleType === 'recurring' && (
-                <Select
-                  label="Recurrence Pattern"
-                  options={[
-                    { label: 'Daily', value: 'daily' },
-                    { label: 'Weekly', value: 'weekly' },
-                    { label: 'Monthly', value: 'monthly' },
-                    { label: 'Yearly', value: 'yearly' }
-                  ]}
-                  value={config.recurrencePattern || 'daily'}
-                  onChange={(value) => handleConfigChange('recurrencePattern', value)}
-                />
-              )}
-              
-              {config.scheduleType === 'one-time' && (
-                <TextField
-                  label="Schedule Date"
-                  type="date"
-                  value={String(config.scheduleDate || '')}
-                  onChange={(value) => handleConfigChange('scheduleDate', value)}
-                  autoComplete="off"
-                  helpText="Date for one-time execution"
-                />
-              )}
-              
-              {config.recurrencePattern === 'weekly' && (
-                <Select
-                  label="Day of Week"
-                  options={[
-                    { label: 'Sunday', value: '0' },
-                    { label: 'Monday', value: '1' },
-                    { label: 'Tuesday', value: '2' },
-                    { label: 'Wednesday', value: '3' },
-                    { label: 'Thursday', value: '4' },
-                    { label: 'Friday', value: '5' },
-                    { label: 'Saturday', value: '6' }
-                  ]}
-                  value={String(config.dayOfWeek || '1')}
-                  onChange={(value) => handleConfigChange('dayOfWeek', parseInt(value))}
-                />
-              )}
-              
-              {config.recurrencePattern === 'monthly' && (
-                <TextField
-                  label="Day of Month"
-                  type="number"
-                  min="1"
-                  max="31"
-                  value={String(config.dayOfMonth || '1')}
-                  onChange={(value) => handleConfigChange('dayOfMonth', parseInt(value) || 1)}
-                  autoComplete="off"
-                  helpText="Day of the month (1-31)"
-                />
-              )}
-            </>
-          )}
+            config.scheduleTime || 
+            selectedNode.data.label.includes('Daily') || 
+            selectedNode.data.label.includes('Weekly') || 
+            selectedNode.data.label.includes('Schedule')) && 
+            renderScheduleConfiguration(config)
+          }
         </>
       );
     }
@@ -281,6 +204,7 @@ const PropertiesSidebar: React.FC = () => {
               autoComplete="off"
               helpText="Field name containing the recipient's phone number"
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
@@ -311,6 +235,7 @@ const PropertiesSidebar: React.FC = () => {
               autoComplete="off"
               helpText="Field name containing the recipient's email address"
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
@@ -341,6 +266,7 @@ const PropertiesSidebar: React.FC = () => {
               autoComplete="off"
               helpText="Optional image URL to include in the LINE message"
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
@@ -378,6 +304,7 @@ const PropertiesSidebar: React.FC = () => {
               multiline={3}
               autoComplete="off"
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
@@ -418,18 +345,22 @@ const PropertiesSidebar: React.FC = () => {
               autoComplete="off"
               helpText="Optional HTTP headers in JSON format"
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
       
       if (selectedNode.data.label.includes('tags')) {
         return (
-          <TextField
-            label="Tags (comma-separated)"
-            value={Array.isArray(localConfig.tags) ? localConfig.tags.join(', ') : ''}
-            onChange={(value) => handleConfigChange('tags', value.split(',').map(t => t.trim()))}
-            autoComplete="off"
-          />
+          <>
+            <TextField
+              label="Tags (comma-separated)"
+              value={Array.isArray(localConfig.tags) ? localConfig.tags.join(', ') : ''}
+              onChange={(value) => handleConfigChange('tags', value.split(',').map(t => t.trim()))}
+              autoComplete="off"
+            />
+            {renderScheduleConfiguration(localConfig)}
+          </>
         );
       }
       
@@ -449,6 +380,7 @@ const PropertiesSidebar: React.FC = () => {
               onChange={(value) => handleConfigChange('quantity', parseInt(value) || 1)}
               autoComplete="off"
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
@@ -479,6 +411,7 @@ const PropertiesSidebar: React.FC = () => {
               value={String(localConfig.unit || 'seconds')}
               onChange={(value) => handleConfigChange('unit', value)}
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
@@ -506,12 +439,98 @@ const PropertiesSidebar: React.FC = () => {
               value={String(localConfig.level || 'info')}
               onChange={(value) => handleConfigChange('level', value)}
             />
+            {renderScheduleConfiguration(localConfig)}
           </>
         );
       }
     }
     
     return null;
+  };
+  
+  const renderScheduleConfiguration = (config: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    return (
+      <>
+        <Divider />
+        <BlockStack gap="300">
+          <Text as="h3" variant="headingMd">Schedule Configuration</Text>
+          
+          <Select
+            label="Schedule Type"
+            options={[
+              { label: 'One-time', value: 'one-time' },
+              { label: 'Recurring', value: 'recurring' }
+            ]}
+            value={config.scheduleType || 'recurring'}
+            onChange={(value) => handleConfigChange('scheduleType', value)}
+          />
+          
+          <TextField
+            label="Schedule Time"
+            value={String(config.scheduleTime || '')}
+            onChange={(value) => handleConfigChange('scheduleTime', value)}
+            autoComplete="off"
+            placeholder="14:00"
+            helpText="Time in 24-hour format (e.g., 14:00 for 2 PM)"
+          />
+          
+          {config.scheduleType === 'recurring' && (
+            <Select
+                label="Recurrence Pattern"
+                options={[
+                  { label: 'Daily', value: 'daily' },
+                  { label: 'Weekly', value: 'weekly' },
+                  { label: 'Monthly', value: 'monthly' },
+                  { label: 'Yearly', value: 'yearly' }
+                ]}
+                value={config.recurrencePattern || 'daily'}
+                onChange={(value) => handleConfigChange('recurrencePattern', value)}
+              />
+          )}
+          
+          {config.scheduleType === 'one-time' && (
+            <TextField
+              label="Schedule Date"
+              type="date"
+              value={String(config.scheduleDate || '')}
+              onChange={(value) => handleConfigChange('scheduleDate', value)}
+              autoComplete="off"
+              helpText="Date for one-time execution"
+            />
+          )}
+          
+          {config.recurrencePattern === 'weekly' && (
+            <Select
+              label="Day of Week"
+              options={[
+                { label: 'Sunday', value: '0' },
+                { label: 'Monday', value: '1' },
+                { label: 'Tuesday', value: '2' },
+                { label: 'Wednesday', value: '3' },
+                { label: 'Thursday', value: '4' },
+                { label: 'Friday', value: '5' },
+                { label: 'Saturday', value: '6' }
+              ]}
+              value={String(config.dayOfWeek || '1')}
+              onChange={(value) => handleConfigChange('dayOfWeek', parseInt(value))}
+            />
+          )}
+          
+          {config.recurrencePattern === 'monthly' && (
+            <TextField
+              label="Day of Month"
+              type="number"
+              min="1"
+              max="31"
+              value={String(config.dayOfMonth || '1')}
+              onChange={(value) => handleConfigChange('dayOfMonth', parseInt(value) || 1)}
+              autoComplete="off"
+              helpText="Day of the month (1-31)"
+            />
+          )}
+        </BlockStack>
+      </>
+    );
   };
   
   const getOperatorOptions = (fieldType?: string) => {
