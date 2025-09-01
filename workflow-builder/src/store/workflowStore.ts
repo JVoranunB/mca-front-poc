@@ -4,6 +4,7 @@ import type { Connection, NodeChange, EdgeChange } from '@xyflow/react';
 import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, WorkflowSummary, TriggerType, StartConfig } from '../types/workflow.types';
 import { workflowApiService } from '../services/workflowApi';
 import { WorkflowTransformer } from '../utils/workflowTransformer';
+import { sampleWorkflows } from '../data/sampleWorkflows';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -45,6 +46,7 @@ interface WorkflowState {
   duplicateWorkflow: (id: string) => string;
   toggleWorkflowStatus: (id: string) => void;
   getWorkflowSummary: (workflow: Workflow) => WorkflowSummary;
+  resetToSampleWorkflows: () => void;
   
   validateWorkflow: () => boolean;
   setValidationErrors: (errors: ValidationError[]) => void;
@@ -59,12 +61,23 @@ interface WorkflowState {
   setSaveError: (error: string | null) => void;
 }
 
+// Helper function to initialize workflows with samples if localStorage is empty
+const initializeWorkflows = (): Workflow[] => {
+  const storedWorkflows = localStorage.getItem('workflows');
+  if (!storedWorkflows || JSON.parse(storedWorkflows).length === 0) {
+    // If no workflows in localStorage, use sample workflows as default
+    localStorage.setItem('workflows', JSON.stringify(sampleWorkflows));
+    return sampleWorkflows;
+  }
+  return JSON.parse(storedWorkflows);
+};
+
 const useWorkflowStore = create<WorkflowState>((set, get) => ({
   nodes: [],
   edges: [],
   selectedNode: null,
   selectedEdge: null,
-  workflows: JSON.parse(localStorage.getItem('workflows') || '[]'),
+  workflows: initializeWorkflows(),
   currentWorkflow: null,
   validationErrors: [],
   isDirty: false,
@@ -597,6 +610,22 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   
   setSaveError: (error) => {
     set({ saveError: error });
+  },
+
+  resetToSampleWorkflows: () => {
+    // Manually load sample workflows (replaces current workflows)
+    localStorage.setItem('workflows', JSON.stringify(sampleWorkflows));
+    
+    set({ 
+      workflows: sampleWorkflows,
+      currentWorkflow: null,
+      nodes: [],
+      edges: [],
+      selectedNode: null,
+      selectedEdge: null,
+      validationErrors: [],
+      isDirty: false
+    });
   }
 }));
 

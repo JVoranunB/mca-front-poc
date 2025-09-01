@@ -7,6 +7,9 @@ import './styles/reactflow-polaris.css';
 import WorkflowListPage from './pages/WorkflowListPage';
 import WorkflowBuilderPage from './pages/WorkflowBuilderPage';
 
+// Import workflow reset utilities for development
+import './utils/workflowReset';
+
 function App() {
   return (
     <AppProvider i18n={{}}>
