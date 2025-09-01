@@ -19,7 +19,7 @@ import type { WorkflowCondition, StartConfig, TriggerConfig } from '../types/wor
 import { getDataSourcesForConditions, getCollectionsForDataSource, getFieldsForCollection, type DataSourceField } from '../utils/dataSourceFields';
 
 const PropertiesSidebar: React.FC = () => {
-  const { selectedNode, updateNode, deleteNode, rightSidebarVisible, toggleRightSidebar } = useWorkflowStore();
+  const { selectedNode, updateNode, deleteNode, rightSidebarVisible, toggleRightSidebar, currentWorkflow } = useWorkflowStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [localConfig, setLocalConfig] = useState<Record<string, any>>({});
   const [conditions, setConditions] = useState<WorkflowCondition[]>([]);
@@ -28,8 +28,12 @@ const PropertiesSidebar: React.FC = () => {
     if (selectedNode) {
       setLocalConfig(selectedNode.data.config || {});
       setConditions(selectedNode.data.conditions || []);
+    } else {
+      // Clear local config when no node is selected
+      setLocalConfig({});
+      setConditions([]);
     }
-  }, [selectedNode]);
+  }, [selectedNode, currentWorkflow?.id]);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleConfigChange = (key: string, value: any) => {
@@ -164,12 +168,8 @@ const PropertiesSidebar: React.FC = () => {
           />
           
           
-          {/* Schedule Configuration - show for schedule-based workflows or when explicitly set */}
-          {(config.triggerCategory === 'scheduled' || 
-            config.scheduleTime || 
-            selectedNode.data.label.includes('Daily') || 
-            selectedNode.data.label.includes('Weekly') || 
-            selectedNode.data.label.includes('Schedule')) && 
+          {/* Schedule Configuration - show only for schedule-based workflows */}
+          {currentWorkflow?.triggerType === 'schedule-based' && 
             renderScheduleConfiguration(config)
           }
         </>

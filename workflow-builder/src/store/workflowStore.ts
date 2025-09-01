@@ -335,6 +335,9 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
         nodes: workflow.nodes,
         edges: workflow.edges,
         currentWorkflow: workflow,
+        selectedNode: null,
+        selectedEdge: null,
+        rightSidebarVisible: false,
         isDirty: false
       });
     }
@@ -527,6 +530,7 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
       edges: [],
       selectedNode: null,
       selectedEdge: null,
+      rightSidebarVisible: false,
       validationErrors: [],
       isDirty: false
     });
