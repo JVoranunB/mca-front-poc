@@ -528,6 +528,40 @@ const PropertiesSidebar: React.FC = () => {
               helpText="Day of the month (1-31)"
             />
           )}
+          
+          {config.recurrencePattern === 'yearly' && (
+            <>
+              <Select
+                label="Month"
+                options={[
+                  { label: 'January', value: '1' },
+                  { label: 'February', value: '2' },
+                  { label: 'March', value: '3' },
+                  { label: 'April', value: '4' },
+                  { label: 'May', value: '5' },
+                  { label: 'June', value: '6' },
+                  { label: 'July', value: '7' },
+                  { label: 'August', value: '8' },
+                  { label: 'September', value: '9' },
+                  { label: 'October', value: '10' },
+                  { label: 'November', value: '11' },
+                  { label: 'December', value: '12' }
+                ]}
+                value={String(config.month || '1')}
+                onChange={(value) => handleConfigChange('month', parseInt(value))}
+              />
+              <TextField
+                label="Day of Month"
+                type="number"
+                min="1"
+                max="31"
+                value={String(config.dayOfMonth || '1')}
+                onChange={(value) => handleConfigChange('dayOfMonth', parseInt(value) || 1)}
+                autoComplete="off"
+                helpText="Day of the month (1-31)"
+              />
+            </>
+          )}
         </BlockStack>
       </>
     );
