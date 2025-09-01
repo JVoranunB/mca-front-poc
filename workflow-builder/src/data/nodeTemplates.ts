@@ -27,7 +27,7 @@ export const nodeTemplates: NodeTemplate[] = [
   },
   {
     type: 'action',
-    label: 'Send email campaign',
+    label: 'Send email notification',
     description: 'Send personalized email with campaign templates',
     icon: 'EmailIcon',
     category: 'actions',
@@ -36,6 +36,19 @@ export const nodeTemplates: NodeTemplate[] = [
       emailField: 'email',
       subject: '',
       includeCustomerData: true
+    }
+  },
+  {
+    type: 'action',
+    label: 'Send LINE notification',
+    description: 'Send message via LINE messaging platform',
+    icon: 'NotificationIcon',
+    category: 'actions',
+    defaultConfig: {
+      message: '',
+      lineUserId: '',
+      includeCustomerData: true,
+      imageUrl: ''
     }
   },
   {
@@ -49,29 +62,6 @@ export const nodeTemplates: NodeTemplate[] = [
       method: 'POST',
       includeCustomerData: true,
       headers: {}
-    }
-  },
-  {
-    type: 'action',
-    label: 'Update customer data',
-    description: 'Update customer profile fields in CRM',
-    icon: 'CustomerIcon',
-    category: 'actions',
-    defaultConfig: {
-      updates: {},
-      dataSource: 'crm'
-    }
-  },
-  {
-    type: 'action',
-    label: 'Issue reward',
-    description: 'Issue points, coupons, or other rewards to customer',
-    icon: 'GiftIcon',
-    category: 'actions',
-    defaultConfig: {
-      rewardType: 'points',
-      amount: 100,
-      expiryDays: 30
     }
   },
   {

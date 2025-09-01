@@ -175,6 +175,89 @@ const PropertiesSidebar: React.FC = () => {
     }
     
     if (selectedNode.data.type === 'action') {
+      // SMS notification configuration
+      if (selectedNode.data.label.includes('SMS')) {
+        return (
+          <>
+            <TextField
+              label="SMS Message"
+              value={String(localConfig.message || '')}
+              onChange={(value) => handleConfigChange('message', value)}
+              multiline={4}
+              autoComplete="off"
+              helpText="Enter the SMS message to send. You can use variables like {{customer_name}}"
+            />
+            <TextField
+              label="Phone Number Field"
+              value={String(localConfig.phoneField || 'phone_number')}
+              onChange={(value) => handleConfigChange('phoneField', value)}
+              autoComplete="off"
+              helpText="Field name containing the recipient's phone number"
+            />
+          </>
+        );
+      }
+      
+      // Email notification configuration
+      if (selectedNode.data.label.includes('email')) {
+        return (
+          <>
+            <TextField
+              label="Email Subject"
+              value={String(localConfig.subject || '')}
+              onChange={(value) => handleConfigChange('subject', value)}
+              autoComplete="off"
+              helpText="Email subject line"
+            />
+            <TextField
+              label="Email Body"
+              value={String(localConfig.body || '')}
+              onChange={(value) => handleConfigChange('body', value)}
+              multiline={6}
+              autoComplete="off"
+              helpText="Email message body. HTML is supported. Use {{variables}} for dynamic content"
+            />
+            <TextField
+              label="Email Field"
+              value={String(localConfig.emailField || 'email')}
+              onChange={(value) => handleConfigChange('emailField', value)}
+              autoComplete="off"
+              helpText="Field name containing the recipient's email address"
+            />
+          </>
+        );
+      }
+      
+      // LINE notification configuration
+      if (selectedNode.data.label.includes('LINE')) {
+        return (
+          <>
+            <TextField
+              label="LINE Message"
+              value={String(localConfig.message || '')}
+              onChange={(value) => handleConfigChange('message', value)}
+              multiline={4}
+              autoComplete="off"
+              helpText="Message to send via LINE. Use {{variables}} for dynamic content"
+            />
+            <TextField
+              label="LINE User ID Field"
+              value={String(localConfig.lineUserId || 'line_user_id')}
+              onChange={(value) => handleConfigChange('lineUserId', value)}
+              autoComplete="off"
+              helpText="Field name containing the recipient's LINE user ID"
+            />
+            <TextField
+              label="Image URL (Optional)"
+              value={String(localConfig.imageUrl || '')}
+              onChange={(value) => handleConfigChange('imageUrl', value)}
+              autoComplete="off"
+              helpText="Optional image URL to include in the LINE message"
+            />
+          </>
+        );
+      }
+      
       if (selectedNode.data.label.includes('HTTP')) {
         return (
           <>
@@ -212,6 +295,46 @@ const PropertiesSidebar: React.FC = () => {
         );
       }
       
+      // Webhook configuration
+      if (selectedNode.data.label.includes('webhook')) {
+        return (
+          <>
+            <TextField
+              label="Webhook URL"
+              value={String(localConfig.url || '')}
+              onChange={(value) => handleConfigChange('url', value)}
+              autoComplete="off"
+              helpText="The URL endpoint to send the webhook request"
+            />
+            <Select
+              label="HTTP Method"
+              options={[
+                { label: 'GET', value: 'GET' },
+                { label: 'POST', value: 'POST' },
+                { label: 'PUT', value: 'PUT' },
+                { label: 'DELETE', value: 'DELETE' }
+              ]}
+              value={String(localConfig.method || 'POST')}
+              onChange={(value) => handleConfigChange('method', value)}
+            />
+            <TextField
+              label="Headers (JSON)"
+              value={localConfig.headers ? JSON.stringify(localConfig.headers) : '{}'}
+              onChange={(value) => {
+                try {
+                  handleConfigChange('headers', JSON.parse(value));
+                } catch {
+                  // Ignore JSON parse errors
+                }
+              }}
+              multiline={3}
+              autoComplete="off"
+              helpText="Optional HTTP headers in JSON format"
+            />
+          </>
+        );
+      }
+      
       if (selectedNode.data.label.includes('tags')) {
         return (
           <TextField
@@ -238,6 +361,63 @@ const PropertiesSidebar: React.FC = () => {
               value={String(localConfig.quantity || 1)}
               onChange={(value) => handleConfigChange('quantity', parseInt(value) || 1)}
               autoComplete="off"
+            />
+          </>
+        );
+      }
+    }
+    
+    // Step/Utility node configurations
+    if (selectedNode.data.type === 'step') {
+      // Wait configuration
+      if (selectedNode.data.label.includes('Wait')) {
+        return (
+          <>
+            <TextField
+              label="Duration"
+              type="number"
+              value={String(localConfig.duration || 60)}
+              onChange={(value) => handleConfigChange('duration', parseInt(value) || 60)}
+              autoComplete="off"
+              helpText="How long to wait"
+            />
+            <Select
+              label="Unit"
+              options={[
+                { label: 'Seconds', value: 'seconds' },
+                { label: 'Minutes', value: 'minutes' },
+                { label: 'Hours', value: 'hours' },
+                { label: 'Days', value: 'days' }
+              ]}
+              value={String(localConfig.unit || 'seconds')}
+              onChange={(value) => handleConfigChange('unit', value)}
+            />
+          </>
+        );
+      }
+      
+      // Log message configuration
+      if (selectedNode.data.label.includes('Log')) {
+        return (
+          <>
+            <TextField
+              label="Log Message"
+              value={String(localConfig.message || '')}
+              onChange={(value) => handleConfigChange('message', value)}
+              multiline={3}
+              autoComplete="off"
+              helpText="Message to add to the workflow log"
+            />
+            <Select
+              label="Log Level"
+              options={[
+                { label: 'Info', value: 'info' },
+                { label: 'Warning', value: 'warning' },
+                { label: 'Error', value: 'error' },
+                { label: 'Debug', value: 'debug' }
+              ]}
+              value={String(localConfig.level || 'info')}
+              onChange={(value) => handleConfigChange('level', value)}
             />
           </>
         );

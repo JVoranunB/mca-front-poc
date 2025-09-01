@@ -16,7 +16,8 @@ import {
   TextContainer,
   InlineStack,
   Toast,
-  Frame
+  Frame,
+  Link
 } from '@shopify/polaris';
 import {
   PlayIcon,
@@ -203,7 +204,13 @@ const WorkflowListPage = () => {
   };
 
   const rows = filteredWorkflows.map((workflow) => [
-    workflow.name,
+    <Link
+      onClick={() => handleEditWorkflow(workflow.id)}
+      removeUnderline
+      monochrome
+    >
+      {workflow.name}
+    </Link>,
     getTriggerTypeBadge(workflow.triggerType),
     getStatusBadge(workflow.status),
     workflow.nodeCount.toString(),
