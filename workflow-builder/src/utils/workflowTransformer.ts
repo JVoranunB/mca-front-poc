@@ -1,5 +1,6 @@
 import type { Workflow, WorkflowNode, WorkflowEdge } from '../types/workflow.types';
 import type { BackendWorkflow, BackendWorkflowAction, BackendWorkflowPeer } from '../services/workflowApi';
+import { DATA_SOURCE_FIELDS } from './dataSourceFields';
 
 interface NodeMapping {
   [nodeId: string]: string; // Maps frontend node IDs to backend action keys
@@ -47,7 +48,7 @@ export class WorkflowTransformer {
     
     // Base action structure
     const action: BackendWorkflowAction = {
-      action_id: this.generateActionId(node),
+      action_id: this.mapNodeToActionId(node),
       key: actionKey,
       type: this.mapNodeTypeToActionType(node.data.type),
       config: this.transformNodeConfig(node),
@@ -58,12 +59,60 @@ export class WorkflowTransformer {
   }
 
   /**
-   * Generate action ID based on node type and label
+   * Map node to standardized action_id
    */
-  private static generateActionId(node: WorkflowNode): string {
-    const type = node.data.type;
-    const label = node.data.label.toLowerCase().replace(/\s+/g, '-');
-    return `${type}-${label}-${node.id.slice(-6)}`;
+  private static mapNodeToActionId(node: WorkflowNode): string {
+    const nodeType = node.data.type;
+    const label = node.data.label.toLowerCase();
+    
+    // Map based on node type and label patterns
+    switch (nodeType) {
+      case 'start':
+        return 'contact-enrollment-trigger';
+        
+      case 'trigger':
+        // Legacy trigger support
+        if (label.includes('cron') || label.includes('schedule')) {
+          return 'cron-trigger-action';
+        }
+        return 'contact-enrollment-trigger';
+        
+      case 'condition':
+        return 'pg-action'; // PostgreSQL condition check
+        
+      case 'action':
+        if (label.includes('sms') || label.includes('phone')) {
+          return 'sms-action';
+        }
+        if (label.includes('email') || label.includes('mail')) {
+          return 'email-action';
+        }
+        if (label.includes('line') || label.includes('LINE')) {
+          return 'line-action';
+        }
+        if (label.includes('slack')) {
+          return 'slack-action';
+        }
+        if (label.includes('webhook') || label.includes('http') || label.includes('api')) {
+          return 'webhook-action';
+        }
+        if (label.includes('tag')) {
+          return 'tag-action';
+        }
+        return 'webhook-action'; // Default for actions
+        
+      case 'step':
+        if (label.includes('wait') || label.includes('delay')) {
+          return 'wait-action';
+        }
+        if (label.includes('log') || label.includes('debug')) {
+          return 'log-action';
+        }
+        return 'pg-action';
+        
+      default:
+        return 'webhook-action'; // Safe default
+    }
   }
 
   /**
@@ -102,7 +151,7 @@ export class WorkflowTransformer {
       case 'condition':
         if (node.data.conditions && node.data.conditions.length > 0) {
           const conditionStrings = node.data.conditions.map((condition) => {
-            const field = `ctx.${condition.dataSource?.toLowerCase()}.${condition.field}`;
+            const field = this.mapFieldToContextPath(condition.dataSource, condition.collection, condition.field);
             const operator = this.mapOperatorToExpression(condition.operator);
             const value = typeof condition.value === 'string' ? `'${condition.value}'` : condition.value;
             
@@ -173,11 +222,119 @@ export class WorkflowTransformer {
   }
 
   /**
+   * Get all available collection names from DATA_SOURCE_FIELDS
+   */
+  private static getAvailableCollections(): string[] {
+    return Object.keys(DATA_SOURCE_FIELDS.CRM);
+  }
+
+  /**
+   * Get the preferred collection for a field type (smart defaults)
+   */
+  private static getPreferredCollectionForField(field: string): string {
+    const availableCollections = this.getAvailableCollections();
+    
+    // Smart mapping based on field name patterns
+    const fieldLowerCase = field.toLowerCase();
+    
+    // User/Contact related fields
+    if (fieldLowerCase.includes('name') || fieldLowerCase.includes('email') || 
+        fieldLowerCase.includes('phone') || fieldLowerCase.includes('user') ||
+        fieldLowerCase.includes('customer') || fieldLowerCase.includes('contact')) {
+      return availableCollections.find(col => col.includes('contact')) || availableCollections[0] || 'data';
+    }
+    
+    // Order related fields
+    if (fieldLowerCase.includes('order') || fieldLowerCase.includes('purchase') || 
+        fieldLowerCase.includes('price') || fieldLowerCase.includes('total') ||
+        fieldLowerCase.includes('amount') || fieldLowerCase.includes('payment')) {
+      return availableCollections.find(col => col.includes('order')) || availableCollections[0] || 'data';
+    }
+    
+    // Merchant related fields
+    if (fieldLowerCase.includes('merchant') || fieldLowerCase.includes('store') ||
+        fieldLowerCase.includes('shop') || fieldLowerCase.includes('business')) {
+      return availableCollections.find(col => col.includes('merchant') || col.includes('store')) || availableCollections[0] || 'data';
+    }
+    
+    // Product related fields
+    if (fieldLowerCase.includes('product') || fieldLowerCase.includes('item') ||
+        fieldLowerCase.includes('sku') || fieldLowerCase.includes('category')) {
+      return availableCollections.find(col => col.includes('product') || col.includes('item')) || availableCollections[0] || 'data';
+    }
+    
+    // Default to first collection
+    return availableCollections[0] || 'data';
+  }
+
+  /**
+   * Map field to correct context path using DATA_SOURCE_FIELDS dynamically
+   */
+  private static mapFieldToContextPath(dataSource?: string, collection?: string, field?: string): string {
+    if (!field) return 'ctx.data.unknown';
+    
+    // Use DATA_SOURCE_FIELDS to determine the correct context path
+    if (dataSource === 'CRM' && collection) {
+      // Get the collection from DATA_SOURCE_FIELDS to ensure field exists
+      const collectionFields = DATA_SOURCE_FIELDS.CRM[collection as keyof typeof DATA_SOURCE_FIELDS.CRM];
+      const fieldExists = collectionFields?.some(f => f.key === field);
+      
+      if (fieldExists) {
+        return `ctx.${collection}.${field}`;
+      }
+    }
+    
+    // Fallback mapping using dynamic collection names from DATA_SOURCE_FIELDS
+    if (dataSource?.toLowerCase() === 'crm') {
+      // Try to find the field in any CRM collection using dynamic names
+      for (const [collectionName, fields] of Object.entries(DATA_SOURCE_FIELDS.CRM)) {
+        if (fields.some(f => f.key === field)) {
+          return `ctx.${collectionName}.${field}`;
+        }
+      }
+      
+      // If not found in any collection, use smart preferred collection
+      const defaultCollection = this.getPreferredCollectionForField(field);
+      return `ctx.${defaultCollection}.${field}`;
+    }
+    
+    // For direct collection specification, use dynamic names if they exist in DATA_SOURCE_FIELDS
+    const availableCollections = this.getAvailableCollections();
+    const collectionName = dataSource?.toLowerCase();
+    
+    if (collectionName && availableCollections.includes(collectionName)) {
+      return `ctx.${collectionName}.${field}`;
+    }
+    
+    // Final fallback
+    return `ctx.data.${field}`;
+  }
+
+  /**
+   * Get context path for a field from DATA_SOURCE_FIELDS dynamically
+   */
+  private static getContextPathForField(field: string): string {
+    // Search through DATA_SOURCE_FIELDS to find the correct context
+    for (const [collectionName, fields] of Object.entries(DATA_SOURCE_FIELDS.CRM)) {
+      if (fields.some(f => f.key === field)) {
+        return `ctx.${collectionName}.${field}`;
+      }
+    }
+    
+    // Use smart preferred collection instead of hardcoded fallback
+    const defaultCollection = this.getPreferredCollectionForField(field);
+    return `ctx.${defaultCollection}.${field}`;
+  }
+
+  /**
    * Transform message template with variables to expression
    */
   private static transformMessageTemplate(template: string): string {
-    // Replace {{variable_name}} with ctx.contacts.variable_name
-    return template.replace(/\{\{(\w+)\}\}/g, "' + ctx.contacts.$1 + '");
+    // Replace {{variable_name}} with the correct context path from DATA_SOURCE_FIELDS
+    return template.replace(/\{\{(\w+)\}\}/g, (_, fieldName) => {
+      const contextPath = this.getContextPathForField(fieldName);
+      return `' + ${contextPath} + '`;
+    });
   }
 
   /**

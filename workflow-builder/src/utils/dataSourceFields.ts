@@ -2,6 +2,7 @@
 export const DATA_SOURCE_FIELDS = {
   CRM: {
     merchants: [
+      { key: 'merchant_id', label: 'Merchant ID', type: 'text' as const },
       { key: 'code', label: 'Merchant Code', type: 'text' as const },
       { key: 'name', label: 'Merchant Name', type: 'text' as const },
       { key: 'created_date', label: 'Registration Date', type: 'date' as const },
@@ -11,7 +12,8 @@ export const DATA_SOURCE_FIELDS = {
       { key: 'code', label: 'Store Code', type: 'text' as const },
       { key: 'name', label: 'Store Name', type: 'text' as const },
       { key: 'merchant_id', label: 'Merchant ID', type: 'text' as const },
-      { key: 'created_date', label: 'Store Created Date', type: 'date' as const }
+      { key: 'created_date', label: 'Store Created Date', type: 'date' as const },
+      { key: 'updated_date', label: 'Last Updated', type: 'date' as const }
     ],
     products: [
       { key: 'code', label: 'Product Code', type: 'text' as const },
@@ -41,7 +43,8 @@ export const DATA_SOURCE_FIELDS = {
       { key: 'last_sale_date', label: 'Last Purchase Date', type: 'date' as const },
       { key: 'member_tier_id', label: 'Member Tier', type: 'text' as const },
       { key: 'status', label: 'Customer Status', type: 'select' as const, options: ['active', 'inactive', 'suspended'] },
-      { key: 'created_date', label: 'Registration Date', type: 'date' as const }
+      { key: 'created_date', label: 'Registration Date', type: 'date' as const },
+      { key: 'updated_date', label: 'Last Updated', type: 'date' as const }
     ],
     orders: [
       { key: 'order_code', label: 'Order Code', type: 'text' as const },

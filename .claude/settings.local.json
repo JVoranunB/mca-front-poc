@@ -11,7 +11,8 @@
       "Bash(sed:*)",
       "Bash(npx tsc:*)",
       "Read(c:\\Work\\Rocket\\mca-front-poc/**)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []
