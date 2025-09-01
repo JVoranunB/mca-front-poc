@@ -3,7 +3,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   ConnectionMode,
   MarkerType,
   type Connection,
@@ -33,7 +32,8 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
     selectEdge,
     selectedEdge,
     deleteEdge,
-    addNode
+    addNode,
+    setRightSidebarVisible
   } = useWorkflowStore();
   
   // Auto-create start node when canvas is empty
@@ -71,7 +71,9 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
   
   const onNodeClick = useCallback((_event: React.MouseEvent, node: WorkflowNode) => {
     selectNode(node);
-  }, [selectNode]);
+    // Auto-open right sidebar when a node is selected
+    setRightSidebarVisible(true);
+  }, [selectNode, setRightSidebarVisible]);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onEdgeClick = useCallback((_event: React.MouseEvent, edge: any) => {
@@ -276,20 +278,6 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({ onDrop, onDragOver, set
       >
         <Background color="#aaa" gap={16} />
         <Controls />
-        <MiniMap 
-          pannable 
-          zoomable 
-          nodeColor={(node) => {
-            const colors: Record<string, string> = {
-              start: '#8B5A99',
-              trigger: '#5C6AC4',
-              condition: '#95A99C',
-              action: '#00848E',
-              step: '#6C71C5'
-            };
-            return colors[node.type || 'default'] || '#8c9196';
-          }}
-        />
       </ReactFlow>
     </div>
   );

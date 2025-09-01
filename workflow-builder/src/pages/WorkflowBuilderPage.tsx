@@ -20,12 +20,15 @@ const WorkflowBuilderPage = () => {
   const navigate = useNavigate();
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { addNode, loadWorkflow, createWorkflowFromType, leftSidebarVisible, rightSidebarVisible } = useWorkflowStore();
+  const { addNode, loadWorkflow, createWorkflowFromType, leftSidebarVisible, rightSidebarVisible, setLeftSidebarVisible } = useWorkflowStore();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const initializeWorkflow = () => {
       const store = useWorkflowStore.getState();
+      
+      // Auto-open left sidebar when coming from workflow list page
+      setLeftSidebarVisible(true);
       
       if (workflowId) {
         // Edit existing workflow
@@ -60,7 +63,7 @@ const WorkflowBuilderPage = () => {
     };
 
     initializeWorkflow();
-  }, [workflowId, triggerType, loadWorkflow, createWorkflowFromType, addNode, navigate]);
+  }, [workflowId, triggerType, loadWorkflow, createWorkflowFromType, addNode, navigate, setLeftSidebarVisible]);
   
   const onDragStart = (event: React.DragEvent, nodeTemplate: NodeTemplate) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify(nodeTemplate));
