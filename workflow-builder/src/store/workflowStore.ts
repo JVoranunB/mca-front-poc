@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import type { Connection, NodeChange, EdgeChange } from '@xyflow/react';
 import type { WorkflowNode, WorkflowEdge, Workflow, ValidationError, WorkflowSummary, TriggerType, StartConfig } from '../types/workflow.types';
+import { workflowApiService } from '../services/workflowApi';
+import { WorkflowTransformer } from '../utils/workflowTransformer';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -14,6 +16,8 @@ interface WorkflowState {
   isDirty: boolean;
   leftSidebarVisible: boolean;
   rightSidebarVisible: boolean;
+  isSaving: boolean;
+  saveError: string | null;
   
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -30,7 +34,7 @@ interface WorkflowState {
   selectNode: (node: WorkflowNode | null) => void;
   selectEdge: (edge: WorkflowEdge | null) => void;
   
-  saveWorkflow: (name: string, description?: string) => void;
+  saveWorkflow: (name: string, description?: string) => Promise<{ success: boolean; error?: string }>;
   loadWorkflow: (workflowId: string) => void;
   clearWorkflow: () => void;
   deleteWorkflow: (workflowId: string) => void;
@@ -50,6 +54,9 @@ interface WorkflowState {
   toggleRightSidebar: () => void;
   setLeftSidebarVisible: (visible: boolean) => void;
   setRightSidebarVisible: (visible: boolean) => void;
+  
+  setSaving: (isSaving: boolean) => void;
+  setSaveError: (error: string | null) => void;
 }
 
 const useWorkflowStore = create<WorkflowState>((set, get) => ({
@@ -63,6 +70,8 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   isDirty: false,
   leftSidebarVisible: true,
   rightSidebarVisible: true,
+  isSaving: false,
+  saveError: null,
   
   onNodesChange: (changes) => {
     set({
@@ -192,41 +201,118 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({ selectedEdge: edge, selectedNode: null });
   },
   
-  saveWorkflow: (name, description) => {
+  saveWorkflow: async (name, description) => {
     const currentState = get();
     
-    // For start node workflows, default to event-based
-    const triggerType: TriggerType = 'event-based';
+    // Set saving state
+    set({ isSaving: true, saveError: null });
     
-    const workflow: Workflow = {
-      id: currentState.currentWorkflow?.id || Date.now().toString(),
-      name,
-      description: description || '',
-      triggerType,
-      nodes: currentState.nodes,
-      edges: currentState.edges,
-      createdAt: currentState.currentWorkflow?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: currentState.currentWorkflow?.status || 'draft'
-    };
-    
-    const existingIndex = currentState.workflows.findIndex(w => w.id === workflow.id);
-    let workflows;
-    
-    if (existingIndex >= 0) {
-      workflows = [...currentState.workflows];
-      workflows[existingIndex] = workflow;
-    } else {
-      workflows = [...currentState.workflows, workflow];
+    try {
+      // For start node workflows, default to event-based
+      const triggerType: TriggerType = 'event-based';
+      
+      const workflow: Workflow = {
+        id: currentState.currentWorkflow?.id || Date.now().toString(),
+        name,
+        description: description || '',
+        triggerType,
+        nodes: currentState.nodes,
+        edges: currentState.edges,
+        createdAt: currentState.currentWorkflow?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: currentState.currentWorkflow?.status || 'draft'
+      };
+      
+      // Transform workflow to backend format
+      const backendWorkflow = WorkflowTransformer.transformToBackend(workflow);
+      
+      // Validate transformed workflow
+      const validation = WorkflowTransformer.validateBackendWorkflow(backendWorkflow);
+      if (!validation.valid) {
+        console.warn('Backend workflow validation warnings:', validation.errors);
+      }
+      
+      // Save to backend API
+      const existingWorkflow = currentState.workflows.find(w => w.id === workflow.id);
+      const apiResult = existingWorkflow 
+        ? await workflowApiService.updateWorkflow(workflow.id, backendWorkflow)
+        : await workflowApiService.saveWorkflow(backendWorkflow);
+      
+      if (!apiResult.success) {
+        throw new Error(apiResult.error || 'Failed to save workflow to backend');
+      }
+      
+      // Save to localStorage as backup
+      const existingIndex = currentState.workflows.findIndex(w => w.id === workflow.id);
+      let workflows;
+      
+      if (existingIndex >= 0) {
+        workflows = [...currentState.workflows];
+        workflows[existingIndex] = workflow;
+      } else {
+        workflows = [...currentState.workflows, workflow];
+      }
+      
+      localStorage.setItem('workflows', JSON.stringify(workflows));
+      
+      set({
+        workflows,
+        currentWorkflow: workflow,
+        isDirty: false,
+        isSaving: false,
+        saveError: null
+      });
+      
+      return { success: true };
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save workflow';
+      console.error('Save workflow error:', error);
+      
+      set({
+        isSaving: false,
+        saveError: errorMessage
+      });
+      
+      // Fallback to localStorage only
+      try {
+        const triggerType: TriggerType = 'event-based';
+        
+        const workflow: Workflow = {
+          id: currentState.currentWorkflow?.id || Date.now().toString(),
+          name,
+          description: description || '',
+          triggerType,
+          nodes: currentState.nodes,
+          edges: currentState.edges,
+          createdAt: currentState.currentWorkflow?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: currentState.currentWorkflow?.status || 'draft'
+        };
+        
+        const existingIndex = currentState.workflows.findIndex(w => w.id === workflow.id);
+        let workflows;
+        
+        if (existingIndex >= 0) {
+          workflows = [...currentState.workflows];
+          workflows[existingIndex] = workflow;
+        } else {
+          workflows = [...currentState.workflows, workflow];
+        }
+        
+        localStorage.setItem('workflows', JSON.stringify(workflows));
+        
+        set({
+          workflows,
+          currentWorkflow: workflow,
+          isDirty: false
+        });
+        
+        return { success: false, error: `${errorMessage} (saved locally only)` };
+      } catch {
+        return { success: false, error: errorMessage };
+      }
     }
-    
-    localStorage.setItem('workflows', JSON.stringify(workflows));
-    
-    set({
-      workflows,
-      currentWorkflow: workflow,
-      isDirty: false
-    });
   },
   
   loadWorkflow: (workflowId) => {
@@ -503,6 +589,14 @@ const useWorkflowStore = create<WorkflowState>((set, get) => ({
   
   setRightSidebarVisible: (visible) => {
     set({ rightSidebarVisible: visible });
+  },
+  
+  setSaving: (isSaving) => {
+    set({ isSaving });
+  },
+  
+  setSaveError: (error) => {
+    set({ saveError: error });
   }
 }));
 

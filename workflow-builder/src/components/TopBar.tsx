@@ -47,10 +47,12 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
     currentWorkflow,
     validateWorkflow,
     isDirty,
-    nodes
+    nodes,
+    isSaving,
+    saveError
   } = useWorkflowStore();
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!workflowName.trim()) {
       setToastMessage('Please enter a workflow name');
       setToastError(true);
@@ -66,13 +68,26 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
       return;
     }
     
-    saveWorkflow(workflowName, workflowDescription);
-    setIsSaveModalOpen(false);
-    setWorkflowName('');
-    setWorkflowDescription('');
-    setToastMessage('Workflow saved successfully');
-    setToastError(false);
-    setShowToast(true);
+    try {
+      const result = await saveWorkflow(workflowName, workflowDescription);
+      
+      setIsSaveModalOpen(false);
+      setWorkflowName('');
+      setWorkflowDescription('');
+      
+      if (result.success) {
+        setToastMessage('✅ Workflow saved successfully (FAKE API) - Check console for request details');
+        setToastError(false);
+      } else {
+        setToastMessage(result.error || 'Failed to save workflow');
+        setToastError(true);
+      }
+      setShowToast(true);
+    } catch {
+      setToastMessage('Unexpected error occurred while saving');
+      setToastError(true);
+      setShowToast(true);
+    }
   };
   
   const handleLoad = () => {
@@ -223,10 +238,17 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
           <InlineStack gap="200">
             <Button
               icon={SaveIcon}
-              onClick={() => setIsSaveModalOpen(true)}
-              variant="primary"              
+              onClick={() => {
+                if (currentWorkflow) {
+                  setWorkflowName(currentWorkflow.name);
+                  setWorkflowDescription(currentWorkflow.description || '');
+                }
+                setIsSaveModalOpen(true);
+              }}
+              variant="primary"
+              loading={isSaving}
             >
-              Save
+              {isSaving ? 'Saving...' : 'Save'}
             </Button>
             <Button
               icon={FolderIcon}
@@ -256,8 +278,9 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
         onClose={() => setIsSaveModalOpen(false)}
         title="Save Workflow"
         primaryAction={{
-          content: 'Save',
-          onAction: handleSave
+          content: isSaving ? 'Saving...' : 'Save',
+          onAction: handleSave,
+          loading: isSaving
         }}
         secondaryActions={[
           {
@@ -350,6 +373,15 @@ const TopBar: React.FC<TopBarProps> = ({ onBackToList }) => {
           content={toastMessage}
           onDismiss={() => setShowToast(false)}
           error={toastError}
+        />
+      )}
+      
+      {saveError && (
+        <Toast
+          content={`Save Error: ${saveError}`}
+          onDismiss={() => useWorkflowStore.getState().setSaveError(null)}
+          error={true}
+          duration={10000}
         />
       )}
     </>
