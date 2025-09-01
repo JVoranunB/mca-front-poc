@@ -127,7 +127,14 @@ export const sampleWorkflows: Workflow[] = [
             label: 'Cart Recovery Start',
             description: 'Starting point for cart recovery campaign',
             merchantId: 'SHOP001',
-            dataSource: 'CRM'
+            dataSource: 'CRM',
+            triggerCategory: 'scheduled',
+            scheduleTime: '14:00',
+            timezone: 'America/New_York',
+            recurrencePattern: 'daily',
+            scheduleType: 'recurring',
+            changeStreamEnabled: false,
+            collections: ['orders']
           }
         }
       },
@@ -348,7 +355,15 @@ export const sampleWorkflows: Workflow[] = [
             label: 'Inventory Check Start',
             description: 'Starting point for inventory monitoring workflow',
             merchantId: 'SHOP001',
-            dataSource: 'CRM'
+            dataSource: 'CRM',
+            triggerCategory: 'scheduled',
+            scheduleTime: '08:00',
+            timezone: 'America/New_York',
+            recurrencePattern: 'weekly',
+            scheduleType: 'recurring',
+            dayOfWeek: 1,
+            changeStreamEnabled: false,
+            collections: ['products']
           }
         }
       },

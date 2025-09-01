@@ -15,7 +15,7 @@ import {
 import { ChevronLeftIcon, ChevronRightIcon } from '@shopify/polaris-icons';
 import { Icons } from '../utils/icons';
 import useWorkflowStore from '../store/workflowStore';
-import type { WorkflowCondition, StartConfig } from '../types/workflow.types';
+import type { WorkflowCondition, StartConfig, TriggerConfig } from '../types/workflow.types';
 import { getDataSourcesForConditions, getCollectionsForDataSource, getFieldsForCollection, type DataSourceField } from '../utils/dataSourceFields';
 
 const PropertiesSidebar: React.FC = () => {
@@ -142,7 +142,7 @@ const PropertiesSidebar: React.FC = () => {
   
   const renderConfigFields = () => {
     if (selectedNode.data.type === 'start') {
-      const config = localConfig as StartConfig;
+      const config = localConfig as StartConfig & TriggerConfig;
       return (
         <>
           <TextField
@@ -162,6 +162,93 @@ const PropertiesSidebar: React.FC = () => {
             disabled
             helpText="Primary data source for workflow execution"
           />
+          
+          
+          {/* Schedule Configuration - only show for schedule-based workflows */}
+          {(config.triggerCategory === 'scheduled' || 
+            (selectedNode.data.label.includes('Daily') || 
+             selectedNode.data.label.includes('Weekly') || 
+             selectedNode.data.label.includes('Schedule'))) && (
+            <>
+              <FormLayout.Group>
+                <Text as="h3" variant="headingMd">Schedule Configuration</Text>
+              </FormLayout.Group>
+              
+              <Select
+                label="Schedule Type"
+                options={[
+                  { label: 'One-time', value: 'one-time' },
+                  { label: 'Recurring', value: 'recurring' }
+                ]}
+                value={config.scheduleType || 'recurring'}
+                onChange={(value) => handleConfigChange('scheduleType', value)}
+              />
+              
+              <TextField
+                label="Schedule Time"
+                value={String(config.scheduleTime || '')}
+                onChange={(value) => handleConfigChange('scheduleTime', value)}
+                autoComplete="off"
+                placeholder="14:00"
+                helpText="Time in 24-hour format (e.g., 14:00 for 2 PM)"
+              />
+              
+              {config.scheduleType === 'recurring' && (
+                <Select
+                  label="Recurrence Pattern"
+                  options={[
+                    { label: 'Daily', value: 'daily' },
+                    { label: 'Weekly', value: 'weekly' },
+                    { label: 'Monthly', value: 'monthly' },
+                    { label: 'Yearly', value: 'yearly' }
+                  ]}
+                  value={config.recurrencePattern || 'daily'}
+                  onChange={(value) => handleConfigChange('recurrencePattern', value)}
+                />
+              )}
+              
+              {config.scheduleType === 'one-time' && (
+                <TextField
+                  label="Schedule Date"
+                  type="date"
+                  value={String(config.scheduleDate || '')}
+                  onChange={(value) => handleConfigChange('scheduleDate', value)}
+                  autoComplete="off"
+                  helpText="Date for one-time execution"
+                />
+              )}
+              
+              {config.recurrencePattern === 'weekly' && (
+                <Select
+                  label="Day of Week"
+                  options={[
+                    { label: 'Sunday', value: '0' },
+                    { label: 'Monday', value: '1' },
+                    { label: 'Tuesday', value: '2' },
+                    { label: 'Wednesday', value: '3' },
+                    { label: 'Thursday', value: '4' },
+                    { label: 'Friday', value: '5' },
+                    { label: 'Saturday', value: '6' }
+                  ]}
+                  value={String(config.dayOfWeek || '1')}
+                  onChange={(value) => handleConfigChange('dayOfWeek', parseInt(value))}
+                />
+              )}
+              
+              {config.recurrencePattern === 'monthly' && (
+                <TextField
+                  label="Day of Month"
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={String(config.dayOfMonth || '1')}
+                  onChange={(value) => handleConfigChange('dayOfMonth', parseInt(value) || 1)}
+                  autoComplete="off"
+                  helpText="Day of the month (1-31)"
+                />
+              )}
+            </>
+          )}
         </>
       );
     }
