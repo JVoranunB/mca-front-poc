@@ -20,14 +20,18 @@ This is a React-based workflow automation builder POC that mimics Shopify Flow. 
 src/
 ├── components/
 │   ├── nodes/                  # Custom React Flow node components
-│   │   ├── TriggerNode.tsx     # Purple nodes - workflow entry points
+│   │   ├── StartNode.tsx       # Purple nodes - workflow starting point (auto-created)
+│   │   ├── TriggerNode.tsx     # Purple nodes - workflow entry points (legacy)
 │   │   ├── ConditionNode.tsx   # Green nodes - decision logic with Then/Otherwise branches
 │   │   ├── ActionNode.tsx      # Teal nodes - workflow actions
 │   │   └── StepNode.tsx        # Indigo nodes - utility steps
-│   ├── NodeSidebar.tsx         # Left sidebar with draggable node templates
-│   ├── PropertiesSidebar.tsx   # Right sidebar for node configuration
+│   ├── NodeSidebar.tsx         # Left sidebar with draggable node templates (collapsible)
+│   ├── PropertiesSidebar.tsx   # Right sidebar for node configuration (collapsible)
 │   ├── TopBar.tsx              # Navigation with save/load/clear actions
 │   └── WorkflowCanvas.tsx      # Main React Flow canvas
+├── pages/
+│   ├── WorkflowListPage.tsx    # Workflow management dashboard
+│   └── WorkflowBuilderPage.tsx # Main workflow editor page
 ├── store/workflowStore.ts      # Zustand store with all workflow state
 ├── types/workflow.types.ts     # TypeScript definitions
 └── data/
@@ -68,15 +72,25 @@ The application uses Zustand for state management with the following key pattern
 - `onNodesChange()`, `onEdgesChange()` - React Flow integration
 - `saveWorkflow()`, `loadWorkflow()` - Persistence operations
 - `validateWorkflow()` - Workflow validation with error reporting
+- `toggleLeftSidebar()`, `toggleRightSidebar()` - Sidebar visibility control
+- `setLeftSidebarVisible()`, `setRightSidebarVisible()` - Direct sidebar state setters
 
 ## Node System Architecture
 
 ### Node Types and Behaviors
 
-1. **Trigger Nodes**: Single entry points, no input handles, colored purple
+1. **Start Node**: Auto-created workflow entry point, no input handles, colored purple
 2. **Condition Nodes**: Decision logic with "then" and "otherwise" output handles, colored green
-3. **Action Nodes**: Workflow actions, single input/output, colored teal
-4. **Step Nodes**: Utility functions, single input/output, colored indigo
+3. **Action Nodes**: Workflow actions (SMS, Email, LINE, Webhook, Tags), single input/output, colored teal
+4. **Step Nodes**: Utility functions (Wait, Log), single input/output, colored indigo
+
+### Available Actions
+
+- **Send SMS notification**: Editable message content with dynamic variables
+- **Send email notification**: Editable subject and body (HTML supported)
+- **Send LINE notification**: LINE messaging with optional images
+- **Trigger webhook**: External API calls with configurable headers
+- **Add tags**: Customer profile tagging
 
 ### Custom Node Implementation
 
@@ -109,6 +123,28 @@ Workflow validation runs automatically and checks:
 - Condition nodes have both "then" and "otherwise" branches connected
 - Results displayed as errors/warnings in UI
 
+## UI Features
+
+### Collapsible Sidebars
+- **Left Sidebar**: Node templates, auto-opens when entering builder
+- **Right Sidebar**: Properties panel, auto-opens when selecting a node
+- Both sidebars can be collapsed to maximize canvas workspace
+- Smooth transitions with chevron indicators
+
+### Workflow List Page
+- Clickable workflow names for quick editing
+- Filter by trigger type and status
+- Search functionality
+- Bulk actions (duplicate, delete, toggle status)
+- Empty states with helpful prompts
+
+### Canvas Features
+- Auto-created start node for new workflows
+- Visual connection validation
+- Keyboard shortcuts for edge deletion
+- Background grid and zoom controls
+- No minimap for cleaner interface
+
 ## Polaris Integration
 
 Complete Shopify Polaris integration:
@@ -118,5 +154,5 @@ Complete Shopify Polaris integration:
 - Form components for node configuration
 - Modals for save/load workflows
 - Toast notifications for user feedback
-
-please save my claude token use.
+- Links for clickable workflow names
+- Consistent button and icon usage

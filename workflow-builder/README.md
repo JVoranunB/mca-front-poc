@@ -5,18 +5,21 @@ A professional workflow automation builder application inspired by Shopify Flow,
 ## Features
 
 ### Core Workflow Capabilities
-- **Trigger Nodes**: Start workflows based on events (Collection created, Order created, etc.)
+- **Start Node**: Auto-created workflow entry point
 - **Condition Nodes**: Add decision logic with AND/OR operators and multiple conditions
-- **Action Nodes**: Execute tasks like sending HTTP requests, adding tags, sending emails
-- **Step Nodes**: Simple workflow steps and utilities
+- **Action Nodes**: SMS, Email, LINE notifications, webhooks, and tags
+- **Step Nodes**: Wait timers and logging utilities
 - **Multi-branch Logic**: Support for Then/Otherwise branching from condition nodes
 - **Visual Flow Editor**: Drag-and-drop interface for building workflows
 
 ### UI/UX Features
 - **Shopify Polaris Design System**: Professional, consistent UI that matches Shopify's design language
+- **Collapsible Sidebars**: Hide/show left and right panels to maximize canvas space
+- **Auto-opening Panels**: Sidebars open automatically when needed
+- **Workflow List Page**: Dashboard with search, filters, and clickable workflow names
 - **Node Library Sidebar**: Organized, draggable node templates by category
-- **Properties Panel**: Edit node configurations and conditions
-- **Workflow Management**: Save, load, and manage multiple workflows
+- **Properties Panel**: Edit node configurations with rich form controls
+- **Workflow Management**: Save, load, duplicate, and manage multiple workflows
 - **Validation System**: Real-time workflow validation with error/warning indicators
 - **Responsive Design**: Fully responsive layout with Polaris components
 
@@ -64,22 +67,27 @@ http://localhost:5173
 
 ### Node Types
 
-#### Trigger Nodes (Purple)
-- Start the workflow based on events
-- Examples: Collection created, Order created, Customer created
+#### Start Node (Purple)
+- Auto-created workflow entry point
+- Configured with merchant ID and data source
+- Cannot be deleted
 
 #### Condition Nodes (Green)
 - Add decision logic to workflows
 - Support multiple conditions with AND/OR operators
 - Create Then/Otherwise branches
+- Field-based comparisons with various operators
 
 #### Action Nodes (Teal)
-- Perform actions in the workflow
-- Examples: Send HTTP request, Add tags, Send email, Update inventory
+- **Send SMS notification**: Customizable message content with variables
+- **Send email notification**: HTML emails with subject and body editing
+- **Send LINE notification**: LINE messaging with optional images
+- **Trigger webhook**: External API calls with headers
+- **Add tags**: Customer profile tagging
 
 #### Step Nodes (Indigo)
-- Utility nodes for workflow control
-- Examples: Wait, Log message
+- **Wait**: Pause workflow for seconds/minutes/hours/days
+- **Log message**: Add entries to workflow log with severity levels
 
 ### Managing Workflows
 
@@ -96,14 +104,18 @@ workflow-builder/
 ├── src/
 │   ├── components/
 │   │   ├── nodes/          # Custom React Flow node components
-│   │   │   ├── TriggerNode.tsx
+│   │   │   ├── StartNode.tsx
+│   │   │   ├── TriggerNode.tsx (legacy)
 │   │   │   ├── ConditionNode.tsx
 │   │   │   ├── ActionNode.tsx
 │   │   │   └── StepNode.tsx
-│   │   ├── NodeSidebar.tsx      # Left sidebar with draggable nodes
-│   │   ├── PropertiesSidebar.tsx # Right sidebar for node properties
+│   │   ├── NodeSidebar.tsx      # Collapsible left sidebar
+│   │   ├── PropertiesSidebar.tsx # Collapsible right sidebar
 │   │   ├── TopBar.tsx           # Top navigation with actions
 │   │   └── WorkflowCanvas.tsx   # Main React Flow canvas
+│   ├── pages/
+│   │   ├── WorkflowListPage.tsx # Workflow management dashboard
+│   │   └── WorkflowBuilderPage.tsx # Main builder page
 │   ├── data/
 │   │   ├── nodeTemplates.ts    # Available node templates
 │   │   └── sampleWorkflows.ts  # Sample workflow data
@@ -185,6 +197,23 @@ The application fully integrates Shopify's Polaris design system:
 
 MIT
 
+## Recent Updates
+
+### New Features
+- ✅ Collapsible sidebars for maximizing canvas workspace
+- ✅ Auto-opening sidebars (left on page load, right on node selection)
+- ✅ Clickable workflow names in list page for quick editing
+- ✅ LINE notification support
+- ✅ Editable SMS and email content
+- ✅ Removed minimap for cleaner interface
+- ✅ Start node auto-creation
+- ✅ Workflow list page with filters and search
+
+### Removed Features
+- ❌ "Issue reward" action (removed)
+- ❌ "Update customer data" action (removed)
+- ❌ Minimap (removed for cleaner UI)
+
 ## Future Enhancements
 
 - Backend integration for workflow persistence
@@ -193,9 +222,8 @@ MIT
 - Advanced node types (loops, parallel execution)
 - Import/export workflows as JSON
 - Undo/redo functionality
-- Keyboard shortcuts
-- Node search and filtering
+- Additional keyboard shortcuts
+- Node search and filtering in sidebar
 - Workflow templates library
 - Performance metrics and analytics
-
-please save my claude token use.
+- Workflow versioning and history
